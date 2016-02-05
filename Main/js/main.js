@@ -14,7 +14,7 @@ var wormhole = new THREE.Mesh(
   new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),
   new THREE.MeshBasicMaterial({
     //utilizando a textura na parte de dentro do cilindro
-    map: THREE.ImageUtils.loadTexture('images/0.jpg'),
+    map: THREE.ImageUtils.loadTexture('images/2.jpg'),
     side: THREE.BackSide
   })
 )
