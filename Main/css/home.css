@@ -1,12 +1,19 @@
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans:400,700);
 
+@font-face {
+    font-family:'MyFont';
+    src:
+      local(MyFont),
+      url('starjedi.ttf') format('truetype');
+}
+
 body{
 overflow: hidden;
 margin: 0;
 padding: 0;
 background: #fff;
 color: #fff;
-font-family: "Droid Sans", arial, verdana, sans-serif;
+font-family:'MyFont',"Droid Sans", arial, verdana, sans-serif;
 font-size: 12px;
 }
 
@@ -91,6 +98,23 @@ padding: 6px;
 margin-top: 10px;
 }
 
+button{
+  background-color: Transparent;
+  background-repeat:no-repeat;
+  border: none;
+  cursor:auto;
+  overflow: hidden;
+  outline:none;
+  width: 260px;
+  height: 100px;
+  border-radius: 2px;
+  color: #ffff66;
+  font-family:'MyFont', arial, verdana, sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  padding: 6px;
+  margin-top: -50px;
+}
 
 
 .menu input[type=button]:hover{
