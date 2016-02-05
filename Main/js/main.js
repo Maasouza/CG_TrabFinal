@@ -1,5 +1,6 @@
 //Carregando a dependencia three-world
 var Mundo = require('three-world')
+var THREE = require('three')
 
 //função de update de frame
 function render() {
