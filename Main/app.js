@@ -21,7 +21,7 @@ var wormhole = new THREE.Mesh(
 )
 //rotacionando o cilindro
 wormhole.rotation.x = -Math.PI/2
-Mundo.add(tunnel)
+Mundo.add(wormhole)
 
 Mundo.start()
 
