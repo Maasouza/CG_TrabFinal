@@ -9,7 +9,7 @@ function render() {
 //Iniciando o mundo
 Mundo.init({ renderCallback: render })
 
-var tunnel = new THREE.Mesh(
+var wormhole = new THREE.Mesh(
   new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),
   new THREE.MeshBasicMaterial({
     map: THREE.ImageUtils.loadTexture('images/0.jpg'),
@@ -17,6 +17,6 @@ var tunnel = new THREE.Mesh(
   })
 )
 tunnel.rotation.x = -Math.PI/2
-World.add(tunnel)
+Mundo.add(tunnel)
 
 Mundo.start()
