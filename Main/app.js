@@ -8,7 +8,8 @@ function render() {
 }
 
 //Iniciando o mundo
-Mundo.init({ renderCallback: render })
+Mundo.init({ renderCallback: render,clearColor: 0x000022}) //definindo a funçao de update e a cor de fundo do mundo
+
 //criando o mapa (buraco de minhoca)
 //formato de cilindro
 var wormhole = new THREE.Mesh(
@@ -19,8 +20,12 @@ var wormhole = new THREE.Mesh(
     side: THREE.BackSide
   })
 )
-//rotacionando o cilindro
+//Adicionando nuvem a cena
+Mundo.getScene().fog = THREE.FogExp2(0x000022,0.00125)
+//rotacionando o cilindro para pos frontal a camera
 wormhole.rotation.x = -Math.PI/2
+
+
 Mundo.add(wormhole)
 
 Mundo.start()
