@@ -194,11 +194,11 @@ h2 sub
 {
 	position: absolute;
 	top: 100%;
-	-webkit-animation: scroll 30s linear 4s infinite;
-	-moz-animation: scroll 30s linear 4s infinite;
-	-ms-animation: scroll 30s linear 4s infinite;
-	-o-animation: scroll 30s linear 4s infinite;
-	animation: scroll 30s linear 4s infinite;
+	-webkit-animation: scroll 90s linear 4s infinite;
+	-moz-animation: scroll 90s linear 4s infinite;
+	-ms-animation: scroll 90s linear 4s infinite;
+	-o-animation: scroll 90s linear 4s infinite;
+	animation: scroll 90s linear 4s infinite;
 }
 
 /* animation */
