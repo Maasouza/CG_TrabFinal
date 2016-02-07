@@ -42,9 +42,9 @@ objLoad.load(
   'obj/craft.obj',
   //quando carrega-los
   function(object){
-    object.scale.set(0.2, 0.2, 0.2)
+    object.scale.set(1.2, 1.2, 1.2)
     object.rotation.set(0, Math.PI, 0)
-    object.position.set(0, -25, 0)
+    object.position.set(0, -25, -100)
     spaceship = object
     Mundo.add(spaceship)
   }
