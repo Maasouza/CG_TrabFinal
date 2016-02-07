@@ -35,9 +35,9 @@ var objLoad = new THREE.OBJMTLLoader();
 
 objLoad.load(
   //objeto
-  '../obj/craft.obj',
+  'obj/craft.obj',
   //material
-  '../obj/craft.obj',
+  'obj/craft.obj',
   //quando carrega-los
   function(object){
     Mundo.add(object)
