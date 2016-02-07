@@ -19,7 +19,7 @@ var wormhole = new THREE.Mesh(
     map: THREE.ImageUtils.loadTexture('images/1.jpg',null,function(textura){
       textura.wrapS = textura.wrapT = THREE.RepeatWrapping
       textura.repeat.set(5,10)
-      tex.needsUpdate = true //textura é atualizada dependendo da posição da nava
+      textura.needsUpdate = true //textura é atualizada dependendo da posição da nava
     }),
     side: THREE.BackSide
   })
