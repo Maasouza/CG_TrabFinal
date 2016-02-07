@@ -30,16 +30,23 @@ Mundo.getScene().fog = THREE.FogExp2(0x000022,0.0125)
 //rotacionando o cilindro para pos frontal a camera
 wormhole.rotation.x = -Math.PI/2
 
+//carregar modelo 3d formato .obj e material formato .mtl
 var objLoad = new THREE.OBJMTLLoader();
-
+//criando a nave
+var spacership = null
+//carregando o modelo da nave 
 objLoad.load(
-  //objeto
+  //local do objeto
   'obj/craft.obj',
-  //material
+  //local material
   'obj/craft.obj',
   //quando carrega-los
   function(object){
-    Mundo.add(object)
+    object.scale.set(0.2, 0.2, 0.2)
+    object.rotation.set(0, Math.PI, 0)
+    mesh.position.set(0, -25, 0)
+    spaceship = object
+    Mundo.add(spaceship)
   }
 )
 
