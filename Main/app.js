@@ -35,7 +35,7 @@ wormhole.rotation.x = -Math.PI/2
 var objLoad = new THREE.OBJMTLLoader();
 //criando a nave
 var spacership = null
-//carregando o modelo da nave 
+//carregando o modelo da nave
 objLoad.load(
   //local do objeto
   'obj/craft.obj',
@@ -45,7 +45,7 @@ objLoad.load(
   function(object){
     object.scale.set(0.2, 0.2, 0.2)
     object.rotation.set(0, Math.PI, 0)
-    mesh.position.set(0, -25, 0)
+    object.position.set(0, -25, 0)
     spaceship = object
     Mundo.add(spaceship)
   }
