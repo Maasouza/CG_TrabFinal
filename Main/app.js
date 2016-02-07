@@ -40,7 +40,7 @@ objLoad.load(
   //local do objeto
   'obj/craft.obj',
   //local material
-  'obj/craft.obj',
+  'obj/craft.mtl',
   //quando carrega-los
   function(object){
     object.scale.set(1.2, 1.2, 1.2)
