@@ -25,7 +25,7 @@ var Nave = function(sObject){
         function(object){
 
           //nave 30% do tamanho original
-          object.scale.set(0.2,0.2,0.2)
+          object.scale.set(0.1,0.1,0.1)
           object.rotation.set(0, Math.PI, 0)
           object.position.set(0, -25, -100)
 
