@@ -5,6 +5,9 @@ var THREE = require('three')
 //função de update de frame
 function render() {
   view.position.z-=1;
+  if(view.position.z<wormhole.position.z - 2500 ){
+    wormhole.position.z=-10000
+  }
 }
 
 //Iniciando o mundo
@@ -25,8 +28,6 @@ var wormhole = new THREE.Mesh(
   })
 )
 
-//Adicionando nuvem a cena
-Mundo.getScene().fog = THREE.FogExp2(0x0000022,1)
 
 //rotacionando o cilindro para pos frontal a camera
 wormhole.rotation.x = -Math.PI/2
