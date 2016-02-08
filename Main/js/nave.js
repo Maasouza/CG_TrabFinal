@@ -1,5 +1,6 @@
 //criando o modulo da nave
 
+var THREE = require('three')
 // carregando o modulo de load de objetos 3D
 var myLoader = require('./objmtlloader')
 

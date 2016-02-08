@@ -510,6 +510,7 @@ THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
 },{"three":6}],3:[function(require,module,exports){
 //criando o modulo da nave
 
+var THREE = require('three')
 // carregando o modulo de load de objetos 3D
 var myLoader = require('./objmtlloader')
 
@@ -553,7 +554,7 @@ var Nave = function(sObject){
 //exportando modulo
 module.exports = Nave
 
-},{"./objmtlloader":4}],4:[function(require,module,exports){
+},{"./objmtlloader":4,"three":6}],4:[function(require,module,exports){
  var THREE = require('three'),
     MTLLoader = require('./mtlloader');
 THREE.OBJMTLLoader = function ( manager ) {
