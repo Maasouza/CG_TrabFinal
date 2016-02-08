@@ -5,9 +5,6 @@ var THREE = require('three')
 //função de update de frame
 function render() {
   view.position.z-=1;
-  if(view.position.z<wormhole.position.z - 2500 ){
-    wormhole.position.z=-10000
-  }
 }
 
 //Iniciando o mundo
@@ -50,7 +47,7 @@ objLoad.load(
   //quando carrega-los
   function(object){
     //nave 3x tamanho original
-    object.scale.set(3,3,3)
+    object.scale.set(0.2,0.2,0.2)
     object.rotation.set(0, Math.PI, 0)
     object.position.set(0, -25, 0)
 
