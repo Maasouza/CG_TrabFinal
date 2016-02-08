@@ -38,7 +38,7 @@ var objLoad = new THREE.OBJMTLLoader();
 var spacership = null
 
 //definindo uma camera
-view    = World.getCamera()
+view    = Mundo.getCamera()
 
 //carregando o modelo da nave
 objLoad.load(
