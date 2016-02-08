@@ -4,6 +4,7 @@ var Mundo = require('three-world')
 var THREE = require('three')
 //função de update de frame
 function render() {
+  view.position.z-=1;
 }
 
 //Iniciando o mundo
@@ -32,8 +33,13 @@ wormhole.rotation.x = -Math.PI/2
 
 //carregar modelo 3d formato .obj e material formato .mtl
 var objLoad = new THREE.OBJMTLLoader();
+
 //criando a nave
 var spacership = null
+
+//definindo uma camera
+view    = World.getCamera()
+
 //carregando o modelo da nave
 objLoad.load(
   //local do objeto
@@ -42,11 +48,14 @@ objLoad.load(
   'obj/craft.mtl',
   //quando carrega-los
   function(object){
-    object.scale.set(1.2, 1.2, 1.2)
+    //nave 3x tamanho original
+    object.scale.set(3,3,3)
     object.rotation.set(0, Math.PI, 0)
-    object.position.set(0, -25, -100)
+    object.position.set(0, -25, 0)
+
     spaceship = object
-    Mundo.add(spaceship)
+    view.add(spaceship)
+    Mundo.add(view)
   }
 )
 
