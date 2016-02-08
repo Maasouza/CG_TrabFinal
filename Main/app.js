@@ -1,15 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 //Carregando a dependencia three-world
-var myLoader = require('./objmtlloader')
 var Mundo = require('three-world')
 var THREE = require('three')
+var Nave = require('./nave')
 //função de update de frame
 function render() {
   view.position.z-=1;
 }
 
 //Iniciando o mundo
-Mundo.init({ renderCallback: render,clearColor: 0x000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
+Mundo.init({ renderCallback: render,clearColor: 0x000000,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
 //criando o mapa (buraco de minhoca)
 //formato de cilindro
@@ -26,45 +26,24 @@ var wormhole = new THREE.Mesh(
   })
 )
 
+Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00125)
 
 //rotacionando o cilindro para pos frontal a camera
 wormhole.rotation.x = -Math.PI/2
 
-//carregar modelo 3d formato .obj e material formato .mtl
-var objLoad = new THREE.OBJMTLLoader();
-
-//criando a nave
-var spacership = null
-
 //definindo uma camera
-view    = Mundo.getCamera()
+view  = Mundo.getCamera()
 
-//carregando o modelo da nave
-objLoad.load(
-  //local do objeto
-  'obj/craft.obj',
-  //local material
-  'obj/craft.mtl',
-  //quando carrega-los
-  function(object){
-    //nave 3x tamanho original
-    object.scale.set(2,2,2)
-    object.rotation.set(0, Math.PI, 0)
-    object.position.set(0, -25, -100)
+//criando nova nave
+var nave = new Nave(view)
 
-    spaceship = object
-    view.add(spaceship)
-
-    Mundo.add(view)
-  }
-)
-
-
+//adicionando objetos ao mundo
+Mundo.add(view)
 Mundo.add(wormhole)
 
 Mundo.start()
 
-},{"./objmtlloader":3,"three":5,"three-world":4}],2:[function(require,module,exports){
+},{"./nave":3,"three":6,"three-world":5}],2:[function(require,module,exports){
 
 var THREE = require('three');
 THREE.MTLLoader = function( manager ) {
@@ -528,7 +507,53 @@ THREE.MTLLoader.nextHighestPowerOfTwo_ = function( x ) {
 
 THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
 
-},{"three":5}],3:[function(require,module,exports){
+},{"three":6}],3:[function(require,module,exports){
+//criando o modulo da nave
+
+// carregando o modulo de load de objetos 3D
+var myLoader = require('./objmtlloader')
+
+var nave = null
+
+//definindo o modulo
+var Nave = function(sObject){
+
+  var objLoad = new THREE.OBJMTLLoader();
+
+  //definir modelo como nao carregado
+  this.loaded = false
+  //caso nao tenha uma na
+  if(nave == null){
+      //carregando o modelo da nave
+      objLoad.load(
+        //local do objeto
+        'obj/craft.obj',
+        //local material
+        'obj/craft.mtl',
+        //quando carrega-los
+        function(object){
+
+          //nave 30% do tamanho original
+          object.scale.set(0.3,0.3,0.3)
+          object.rotation.set(0, Math.PI, 0)
+          object.position.set(0, -25, -100)
+
+          nave = object
+
+          //ancorando a nave à um objeto
+          sObject.add(nave)
+
+          //definir nave como carregada
+          this.loaded = true
+        }
+      )
+    }
+}
+
+//exportando modulo
+module.exports = Nave
+
+},{"./objmtlloader":4}],4:[function(require,module,exports){
  var THREE = require('three'),
     MTLLoader = require('./mtlloader');
 THREE.OBJMTLLoader = function ( manager ) {
@@ -899,7 +924,7 @@ THREE.OBJMTLLoader.prototype = {
 
 THREE.EventDispatcher.prototype.apply( THREE.OBJMTLLoader.prototype );
 
-},{"./mtlloader":2,"three":5}],4:[function(require,module,exports){
+},{"./mtlloader":2,"three":6}],5:[function(require,module,exports){
 var THREE = require('three');
 
 var World = (function() {
@@ -998,7 +1023,7 @@ var World = (function() {
 
 module.exports = World;
 
-},{"three":5}],5:[function(require,module,exports){
+},{"three":6}],6:[function(require,module,exports){
 var self = self || {};// File:src/Three.js
 
 /**
