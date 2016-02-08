@@ -30,7 +30,7 @@ Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 
 //adicionando objetos ao mundo
 Mundo.add(view)
-Mundo.add(mapa.showForma)
+Mundo.add(mapa.forma)
 
 
 //----------//
