@@ -10,6 +10,7 @@ var Mapa = require('./mapa')
 //função de update de frame
 function render() {
   view.position.z-=1;
+  mapa.atualizarZ(view.position.z)
 }
 
 //Iniciando o mundo
