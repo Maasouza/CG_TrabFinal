@@ -5,7 +5,7 @@ var Mundo = require('three-world')
 var THREE = require('three')
 //função de update de frame
 function render() {
-  view.position.z-=1;
+//  view.position.z-=1;
 }
 
 //Iniciando o mundo
