@@ -1,5 +1,7 @@
 var THREE = require('three')
 
+var mapa = new THREE.Object3D()
+
 var Mapa = function(texPath) {
   //criando um malha
   var forma = new THREE.Mesh(
@@ -15,9 +17,9 @@ var Mapa = function(texPath) {
   )
   //rotacionando o cilindro para pos frontal a camera
   forma.rotation.x = -Math.PI/2
-
+  mapa.add(forma)
   this.showForma = function() {
-    return forma
+    return mapa
   }
   return this;
 }

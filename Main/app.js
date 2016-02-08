@@ -41,6 +41,8 @@ Mundo.start()
 },{"./mapa":2,"./nave":4,"three":7,"three-world":6}],2:[function(require,module,exports){
 var THREE = require('three')
 
+var mapa = new THREE.Object3D()
+
 var Mapa = function(texPath) {
   //criando um malha
   var forma = new THREE.Mesh(
@@ -56,9 +58,9 @@ var Mapa = function(texPath) {
   )
   //rotacionando o cilindro para pos frontal a camera
   forma.rotation.x = -Math.PI/2
-
+  mapa.add(forma)
   this.showForma = function() {
-    return forma
+    return mapa
   }
   return this;
 }
