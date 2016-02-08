@@ -50,10 +50,11 @@ objLoad.load(
     //nave 3x tamanho original
     object.scale.set(0.2,0.2,0.2)
     object.rotation.set(0, Math.PI, 0)
-    object.position.set(0, -25, -25)
+    object.position.set(0, -25, -100)
 
     spaceship = object
     view.add(spaceship)
+
     Mundo.add(view)
   }
 )
