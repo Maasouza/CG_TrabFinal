@@ -32,7 +32,7 @@ Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 
 //adicionando objetos ao mundo
 Mundo.add(view)
-Mundo.add(mapa.showForma)
+Mundo.add(mapa.showForma())
 
 
 //----------//
@@ -46,7 +46,7 @@ var THREE = require('three')
 
 var Mapa = function(texPath) {
   //criando pois somente é retornado um objeto
-  var field = new THREE.Object3D()
+  var mapa = new THREE.Object3D()
   var formas = []
 
   //criando um malha
@@ -66,11 +66,11 @@ var Mapa = function(texPath) {
   formas.push(formas[0].clone())
   formas[1].position.z=-5000
 
-  field.add(formas[0])
-  field.add(formas[1])
+  mapa.add(formas[0])
+  mapa.add(formas[1])
 
   this.showForma = function() {
-    return field
+    return mapa
   }
 
   this.atualizarZ = function(z) {
