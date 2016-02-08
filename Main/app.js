@@ -9,7 +9,7 @@ function render() {
 }
 
 //Iniciando o mundo
-Mundo.init({ renderCallback: render,clearColor: 0x000022}) //definindo a funçao de update e a cor de fundo do mundo
+Mundo.init({ renderCallback: render,clearColor: 0x000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
 //criando o mapa (buraco de minhoca)
 //formato de cilindro
