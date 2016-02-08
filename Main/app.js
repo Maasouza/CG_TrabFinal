@@ -1,8 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 //Carregando a dependencia three-world
 var Mundo = require('three-world')
+//carregando modulo three
 var THREE = require('three')
+
+//carregando modulos do mapa e da nave
 var Nave = require('./nave')
+var Mapa = require('./mapa')
+
 //função de update de frame
 function render() {
   view.position.z-=1;
@@ -11,39 +16,56 @@ function render() {
 //Iniciando o mundo
 Mundo.init({ renderCallback: render,clearColor: 0x0000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
-//criando o mapa (buraco de minhoca)
-//formato de cilindro
-var wormhole = new THREE.Mesh(
-  new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),
-  new THREE.MeshBasicMaterial({
-    //utilizando a textura na parte de dentro do cilindro
-    map: THREE.ImageUtils.loadTexture('images/1.jpg',null,function(textura){
-      textura.wrapS = textura.wrapT = THREE.RepeatWrapping
-      textura.repeat.set(5,10)
-      textura.needsUpdate = true //textura é atualizada dependendo da posição da nava
-    }),
-    side: THREE.BackSide
-  })
-)
-
-Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
-
-//rotacionando o cilindro para pos frontal a camera
-wormhole.rotation.x = -Math.PI/2
+//criando um mapa
+var mapa = new Mapa('images/1.jpg')
 
 //definindo uma camera
-view  = Mundo.getCamera()
+var view  = Mundo.getCamera()
 
 //criando nova nave
 var nave = new Nave(view)
 
+//efeito de nuvem para suavizar o fundo
+Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
+
+
 //adicionando objetos ao mundo
 Mundo.add(view)
-Mundo.add(wormhole)
+Mundo.add(mapa.showForma)
 
+
+//----------//
 Mundo.start()
+//---------//
 
-},{"./nave":3,"three":6,"three-world":5}],2:[function(require,module,exports){
+},{"./mapa":2,"./nave":4,"three":7,"three-world":6}],2:[function(require,module,exports){
+var THREE = require('three')
+
+var Mapa = function(texPath) {
+  //criando um malha
+  var forma = new THREE.Mesh(
+    new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),//forma cilindrica
+    new THREE.MeshBasicMaterial({//carregando a textura
+      map: THREE.ImageUtils.loadTexture(texPath, null, function(textura) {
+        textura.wrapS = tex.wrapT = THREE.RepeatWrapping
+        textura.repeat.set(5, 10)
+        textura.needsUpdate = true
+      }),
+      side: THREE.BackSide //textura aplicada internamente
+    })
+  )
+  //rotacionando o cilindro para pos frontal a camera
+  forma.rotation.x = -Math.PI/2
+
+  this.showForma = function() {
+    return forma
+  }
+  return this;
+}
+
+module.exports = Mapa
+
+},{"three":7}],3:[function(require,module,exports){
 
 var THREE = require('three');
 THREE.MTLLoader = function( manager ) {
@@ -507,7 +529,7 @@ THREE.MTLLoader.nextHighestPowerOfTwo_ = function( x ) {
 
 THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
 
-},{"three":6}],3:[function(require,module,exports){
+},{"three":7}],4:[function(require,module,exports){
 //criando o modulo da nave
 
 var THREE = require('three')
@@ -554,7 +576,7 @@ var Nave = function(sObject){
 //exportando modulo
 module.exports = Nave
 
-},{"./objmtlloader":4,"three":6}],4:[function(require,module,exports){
+},{"./objmtlloader":5,"three":7}],5:[function(require,module,exports){
  var THREE = require('three'),
     MTLLoader = require('./mtlloader');
 THREE.OBJMTLLoader = function ( manager ) {
@@ -925,7 +947,7 @@ THREE.OBJMTLLoader.prototype = {
 
 THREE.EventDispatcher.prototype.apply( THREE.OBJMTLLoader.prototype );
 
-},{"./mtlloader":2,"three":6}],5:[function(require,module,exports){
+},{"./mtlloader":3,"three":7}],6:[function(require,module,exports){
 var THREE = require('three');
 
 var World = (function() {
@@ -1024,7 +1046,7 @@ var World = (function() {
 
 module.exports = World;
 
-},{"three":6}],6:[function(require,module,exports){
+},{"three":7}],7:[function(require,module,exports){
 var self = self || {};// File:src/Three.js
 
 /**
