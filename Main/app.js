@@ -26,7 +26,7 @@ var wormhole = new THREE.Mesh(
   })
 )
 
-Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00250)
+Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 
 //rotacionando o cilindro para pos frontal a camera
 wormhole.rotation.x = -Math.PI/2
