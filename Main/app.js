@@ -29,10 +29,9 @@ var nave = new Nave(view)
 //efeito de nuvem para suavizar o fundo
 Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 
-
 //adicionando objetos ao mundo
 Mundo.add(view)
-Mundo.add(mapa.showForma())
+Mundo.add(mapa.getMapa())
 
 
 //----------//
@@ -69,7 +68,7 @@ var Mapa = function(texPath) {
   mapa.add(formas[0])
   mapa.add(formas[1])
 
-  this.showForma = function() {
+  this.getMapa = function() {
     return mapa
   }
 

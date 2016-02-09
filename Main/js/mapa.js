@@ -27,7 +27,7 @@ var Mapa = function(texPath) {
   mapa.add(formas[0])
   mapa.add(formas[1])
 
-  this.showForma = function() {
+  this.getMapa = function() {
     return mapa
   }
 
