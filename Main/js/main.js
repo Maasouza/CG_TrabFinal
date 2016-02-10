@@ -8,6 +8,10 @@ var myLoader = require('./objmtlloader')
 
 //Numero de asteroides
 var N_AST = 5
+// material asteroide
+var astMaterial = new THREE.MeshLambertMaterial({
+  map: THREE.ImageUtils.loadTexture('images/lua.png')
+})
 
 //---------------------------------Mapa---------------------------------------
 var Mapa = function(texPath) {
@@ -91,7 +95,7 @@ var Asteroide = function() {
   var objmtlLoad = new THREE.OBJMTLLoader();
   this.loaded = false
   //velocidade de translação
-  asteroide.velocity = Math.random() * 2 + 1
+  asteroide.velocity = Math.random() * 2
   //velocidade de rotação
   asteroide.vRotation = new THREE.Vector3(Math.random(), Math.random(), Math.random())
 
@@ -102,7 +106,8 @@ var Asteroide = function() {
     "obj/craft.mtl",
     //quando carregar-los
     function(object){
-      object.scale.set(5,5,5)
+      object.scale.set(8,8,8)
+      object.material=astMaterial
       asteroide.add(object)
       asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
       this.loaded = true
