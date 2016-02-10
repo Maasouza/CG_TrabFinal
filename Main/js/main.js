@@ -106,8 +106,17 @@ var Asteroide = function() {
     "obj/craft.mtl",
     //quando carregar-los
     function(object){
+
+					object.traverse( function ( child ) {
+
+						if ( child instanceof THREE.Mesh ) {
+
+							child.material = astMaterial;
+
+						}
+
+					} );
       object.scale.set(8,8,8)
-      object.material=astMaterial
       asteroide.add(object)
       asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
       this.loaded = true
