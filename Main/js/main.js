@@ -101,11 +101,10 @@ var Asteroide = function() {
     "obj/asteroide.mtl",
     //quando carregar-los
     function(object){
-      object.scale.set(0.51,0.51,0.51)
+      object.scale.set(10,10,10)
       asteroide.add(object)
-
       asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
-      self.loaded = true
+      this.loaded = true
     }
   )
 
