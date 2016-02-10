@@ -101,7 +101,7 @@ var Asteroide = function() {
     //materialName
     "obj/asteroide.mtl",
     //quando carregar-los
-    function(obj){
+    function(object){
       object.scale.set(0.51,0.51,0.51)
       asteroide.add(obj)
 
