@@ -87,6 +87,7 @@ var Nave = function(sObject){
 //---------------------------------Asteroide-----------------------------------
 
 var Asteroide = function() {
+
   var asteroide = new THREE.Object3D()
   var objmtlLoad = new THREE.OBJMTLLoader();
   this.loaded = false
@@ -99,10 +100,10 @@ var Asteroide = function() {
     //modelo
     "obj/asteroide.obj",
     //materialName
-    "obj/asteroide.mtl",
+    "obj/craft.mtl",
     //quando carregar-los
     function(object){
-      object.scale.set(10,10,10)
+      object.scale.set(5,5,5)
       asteroide.add(object)
       asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
       this.loaded = true
