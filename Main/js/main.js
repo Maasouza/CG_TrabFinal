@@ -143,7 +143,7 @@ function render() {
   //atualizar a posição da nave(camera)
   mapa.atualizarZ(view.position.z)
   //atualizar a posição dos asteroides
-  for(var i=0;i<NUM_ASTEROIDS;i++) asteroides[i].atualizar(view.position.z)
+  for(var i=0;i<N_AST;i++) asteroides[i].atualizar(view.position.z)
 
 
 }
