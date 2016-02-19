@@ -96,7 +96,7 @@ var Asteroide = function() {
   var objmtlLoad = new THREE.OBJMTLLoader();
   this.loaded = false
   //velocidade de translação
-  asteroide.velocity = Math.random() * 2
+  asteroide.velocity = Math.random()*1.2
   //velocidade de rotação
   asteroide.vRotation = new THREE.Vector3(Math.random(), Math.random(), Math.random())
 
@@ -108,15 +108,12 @@ var Asteroide = function() {
     //quando carregar-los
     function(object){
 
-					object.traverse( function ( child ) {
-
-						if ( child instanceof THREE.Mesh ) {
-
-							child.material = astMaterial;
-
-						}
-
-					} );
+			object.traverse( function ( child ) {
+			   if(child instanceof THREE.Mesh ) {
+			      child.material = astMaterial;
+			   }
+			  }
+      )
       object.scale.set(8,8,8)
       asteroide.add(object)
       asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
