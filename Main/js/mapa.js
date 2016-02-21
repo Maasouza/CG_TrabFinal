@@ -1,7 +1,5 @@
-var THREE = require('three')
 
-
-
+//---------------------------------Mapa---------------------------------------
 var Mapa = function(texPath) {
   //criando pois somente é retornado um objeto
   var mapa = new THREE.Object3D()
@@ -9,7 +7,7 @@ var Mapa = function(texPath) {
 
   //criando um malha
   formas.push(new THREE.Mesh(
-    new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),//forma cilindrica
+    new THREE.CylinderGeometry(diametro, diametro, 5000, 24, 24, true),//forma cilindrica
     new THREE.MeshBasicMaterial({//carregando a textura
       map: THREE.ImageUtils.loadTexture(texPath, null, function(textura) {
         textura.wrapS = textura.wrapT = THREE.RepeatWrapping
@@ -30,7 +28,6 @@ var Mapa = function(texPath) {
   this.getMapa = function() {
     return mapa
   }
-
   this.atualizarZ = function(z) {
       for(var i=0; i<2; i++) {
         if(z < formas[i].position.z - 2500) {
@@ -40,8 +37,7 @@ var Mapa = function(texPath) {
       }
     }
 
-
   return this;
 }
 
-module.exports = Mapa
+//---------------------------------Nave----------------------------------------

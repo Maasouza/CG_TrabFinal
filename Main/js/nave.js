@@ -1,45 +1,27 @@
-//criando o modulo da nave
-
-var THREE = require('three')
-// carregando o modulo de load de objetos 3D
-var myLoader = require('./objmtlloader')
-
 var nave = null
-
-//definindo o modulo
-var Nave = function(sObject){
-
-  var objLoad = new THREE.OBJMTLLoader();
-
-  //definir modelo como nao carregado
+var Nave = function(oSuper) {
   this.loaded = false
-  //caso nao tenha uma na
-  if(nave == null){
-      //carregando o modelo da nave
-      objLoad.load(
-        //local do objeto
-        'obj/craft.obj',
-        //local material
-        'obj/craft.mtl',
-        //quando carrega-los
-        function(object){
+  var self = this, nave = null
 
-          //nave 30% do tamanho original
-          object.scale.set(0.1,0.1,0.1)
-          object.rotation.set(0, Math.PI, 0)
-          object.position.set(0, -25, -100)
+  self.hitbox = new THREE.Box3()
 
-          nave = object
+  if(nave === null) {
+    loader.load('obj/craft.obj', 'obj/craf.mtl', function(obj) {
+      obj.scale.set(0.025, 0.025, 0.025)
+      obj.rotation.set(0, Math.PI, 0)
+      nave = obj
+      spaceship.position.set(0, -25, -100)
+      oSuper.add(nave)
+      self.loaded = true
+      self.hitbox.setFromObject(nave)
+    })
+  } else {
+    oSuper.add(nave)
+    self.loaded = true
+  }
 
-          //ancorando a nave à um objeto
-          sObject.add(nave)
-
-          //definir nave como carregada
-          this.loaded = true
-        }
-      )
-    }
+  this.update = function() {
+    if(!nave) return
+    this.hitbox.setFromObject(nave)
+  }
 }
-
-//exportando modulo
-module.exports = Nave

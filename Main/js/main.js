@@ -1,15 +1,16 @@
+
 //Carregando a dependencia three-world
 var Mundo = require('three-world')
 //carregando modulo three
 var THREE = require('three')
 // carregando o modulo de load de objetos 3D
 var myLoader = require('./objmtlloader')
+var myLoaderOBJ = require('./objloader')
 
 
 //Numero de asteroides e inimigos
-var N_OBJS = 3
+var N_OBJS = 5
 var diametro = 100
-itensCarregados = 0
 
 // material asteroide
 var astMaterial = new THREE.MeshLambertMaterial({
@@ -19,15 +20,17 @@ var astMaterial = new THREE.MeshLambertMaterial({
 //gerenciador de carregamento
 var manager = new THREE.LoadingManager();
 manager.onProgress = function ( item, loaded, total ) {
-		console.log( item, loaded );
-    itensCarregados=loaded
-    var porcento = (itensCarregados/15)*100
-    document.getElementById("loading").innerHTML = "Carregando..."+Math.round(porcento, 2)+"%";
-    if(itensCarregados==15){
-      document.getElementById("loadDiv").style.display='none';
-      Mundo.start()
-    }
+		console.log( item, loaded,total);
+    var porcento = (loaded/total)*100
+    //atualiza a % da tela de carregamento
+    document.getElementById("loading").innerHTML = "Carregando "+item+" ..."+Math.round(porcento, 2)+"%";
 };
+//quando todos os modelos tiverem carregados
+manager.onLoad = function(){
+  //retirar a tela de carregamento e iniciar o jogo
+  document.getElementById("loadDiv").style.display='none';
+  Mundo.start()
+}
 
 
 
@@ -37,7 +40,6 @@ var onProgress = function ( xhr ) {
 		console.log( Math.round(percentComplete, 2) + '% downloaded' );
 	}
 };
-
 //---------------------------------Mapa---------------------------------------
 var Mapa = function(texPath) {
   //criando pois somente é retornado um objeto
@@ -84,6 +86,8 @@ var Mapa = function(texPath) {
 
 var nave = null
 var Nave = function(sObject){
+  self=this
+  var loaded = false
   //instanciando o loader
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
   //definir modelo como nao carregado
@@ -106,7 +110,7 @@ var Nave = function(sObject){
           //ancorando a nave à um objeto
           sObject.add(nave)
           //definir nave como carregada
-          this.loaded = true
+          self.loaded = true
         },
         onProgress
       )
@@ -116,10 +120,10 @@ var Nave = function(sObject){
 //---------------------------------Asteroide-----------------------------------
 
 var Asteroide = function() {
-
+  var loaded = false
   var asteroide = new THREE.Object3D()
-  var objmtlLoad = new THREE.OBJMTLLoader(manager);
-  this.loaded = false
+  var objmtlLoad = new THREE.OBJLoader(manager);
+  var self=this;
   //velocidade de translação
   asteroide.velocity = Math.random()*0.5
   //velocidade de rotação
@@ -128,8 +132,6 @@ var Asteroide = function() {
   objmtlLoad.load(
     //modelo
     "obj/asteroide.obj",
-    //materialName
-    "obj/asteroide.mtl",
     //quando carregar-los
     function(object){
 
@@ -142,10 +144,19 @@ var Asteroide = function() {
       object.scale.set(6,6,6)
       asteroide.add(object)
       asteroide.position.set(-(diametro/2) + Math.random() * 100, -(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
-      this.loaded = true
+      self.loaded = true
     },
     onProgress
   )
+
+  this.resetar = function(z){
+    asteroide.velocity = Math.random()*0.5
+    asteroide.position.set(
+      -(diametro/2) + Math.random() * diametro,
+      -(diametro/2) + Math.random() * diametro,
+      z - 1500 - Math.random() * 1500
+    )
+  }
 
   this.atualizar = function(z) {
     //a cada frame atualizar a posição e a rotação
@@ -156,12 +167,7 @@ var Asteroide = function() {
 
     //se o asteroide passar da nave reiniciar a posição
     if(asteroide.position.z > z) {
-      asteroide.velocity = Math.random()*0.5
-      asteroide.position.set(
-        -(diametro/2) + Math.random() * diametro,
-        -(diametro/2) + Math.random() * diametro,
-        z - 1500 - Math.random() * 1500
-      )
+      this.resetar(z)
     }
   }
 
@@ -171,14 +177,16 @@ var Asteroide = function() {
   }
   return this
 }
-//---------------------------------Inimigo-------------------------------
+//-------------------------------inimigos-------------------------------
 var Inimigo = function() {
-
+  var carregado = false
   var inimigo = new THREE.Object3D()
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
-  this.loaded = false
+  self=this
+  this.carregado = false
   //velocidade de translação
-  inimigo.velocity = 0.7
+  inimigo.velocity = 0.5
+
   objmtlLoad.load(
     //modelo
     "obj/inimigo.obj",
@@ -189,11 +197,19 @@ var Inimigo = function() {
       object.scale.set(0.15,0.15,0.15)
       object.rotation.set( Math.PI, Math.PI, 0)
       inimigo.add(object)
-      inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
-      this.loaded = true
+      inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2)
+        + Math.random() * diametro, -1500 - Math.random() * 1500)
+      self.carregado = true
     },
     onProgress
   )
+  this.resetar = function(z){
+    inimigo.position.set(
+      -(diametro/2) + Math.random() * diametro,
+      -(diametro/2) + Math.random() * diametro,
+      z - 1500 - Math.random() * 1500
+    )
+  }
 
   this.atualizar = function(z) {
     //a cada frame atualizar a posição
@@ -201,11 +217,7 @@ var Inimigo = function() {
 
     //se o inimigo passar da nave reiniciar a posição
     if(inimigo.position.z > z) {
-      inimigo.position.set(
-        -(diametro/2) + Math.random() * diametro,
-        -(diametro/2) + Math.random() * diametro,
-        z - 1500 - Math.random() * 1500
-      )
+      this.resetar(z)
     }
   }
 
@@ -218,11 +230,9 @@ var Inimigo = function() {
 }
 
 
-
 //-----------------------------------------------------------------------
 
 
-var t=0
 //função de update de frame
 function render() {
   view.position.z-=1;
@@ -232,7 +242,7 @@ function render() {
 
   for(var i=0;i<N_OBJS;i++) {
     asteroides[i].atualizar(view.position.z)
-    inimigos[i].atualizar(view.position.z)
+    naveI.atualizar(view.position.z)
   }
 
 
@@ -257,12 +267,10 @@ for(var i = 0;i<N_OBJS;i++){
   Mundo.add(asteroides[i].getAsteroide())
 }
 
-//criando vetor para armazenar os inimigos
-var inimigos=[]
-for(var i = 0;i<N_OBJS;i++){
-  inimigos.push(new Inimigo())
-  Mundo.add(inimigos[i].getInimigo())
-}
+var naveI = new Inimigo()
+Mundo.add(naveI.getInimigo())
+
+
 
 
 

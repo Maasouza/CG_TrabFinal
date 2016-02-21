@@ -1,16 +1,17 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
 //Carregando a dependencia three-world
 var Mundo = require('three-world')
 //carregando modulo three
 var THREE = require('three')
 // carregando o modulo de load de objetos 3D
 var myLoader = require('./objmtlloader')
+var myLoaderOBJ = require('./objloader')
 
 
 //Numero de asteroides e inimigos
-var N_OBJS = 3
+var N_OBJS = 5
 var diametro = 100
-itensCarregados = 0
 
 // material asteroide
 var astMaterial = new THREE.MeshLambertMaterial({
@@ -20,15 +21,17 @@ var astMaterial = new THREE.MeshLambertMaterial({
 //gerenciador de carregamento
 var manager = new THREE.LoadingManager();
 manager.onProgress = function ( item, loaded, total ) {
-		console.log( item, loaded );
-    itensCarregados=loaded
-    var porcento = (itensCarregados/15)*100
-    document.getElementById("loading").innerHTML = "Carregando..."+Math.round(porcento, 2)+"%";
-    if(itensCarregados==15){
-      document.getElementById("loadDiv").style.display='none';
-      Mundo.start()
-    }
+		console.log( item, loaded,total);
+    var porcento = (loaded/total)*100
+    //atualiza a % da tela de carregamento
+    document.getElementById("loading").innerHTML = "Carregando "+item+" ..."+Math.round(porcento, 2)+"%";
 };
+//quando todos os modelos tiverem carregados
+manager.onLoad = function(){
+  //retirar a tela de carregamento e iniciar o jogo
+  document.getElementById("loadDiv").style.display='none';
+  Mundo.start()
+}
 
 
 
@@ -38,7 +41,6 @@ var onProgress = function ( xhr ) {
 		console.log( Math.round(percentComplete, 2) + '% downloaded' );
 	}
 };
-
 //---------------------------------Mapa---------------------------------------
 var Mapa = function(texPath) {
   //criando pois somente é retornado um objeto
@@ -85,6 +87,8 @@ var Mapa = function(texPath) {
 
 var nave = null
 var Nave = function(sObject){
+  self=this
+  var loaded = false
   //instanciando o loader
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
   //definir modelo como nao carregado
@@ -107,7 +111,7 @@ var Nave = function(sObject){
           //ancorando a nave à um objeto
           sObject.add(nave)
           //definir nave como carregada
-          this.loaded = true
+          self.loaded = true
         },
         onProgress
       )
@@ -117,10 +121,10 @@ var Nave = function(sObject){
 //---------------------------------Asteroide-----------------------------------
 
 var Asteroide = function() {
-
+  var loaded = false
   var asteroide = new THREE.Object3D()
-  var objmtlLoad = new THREE.OBJMTLLoader(manager);
-  this.loaded = false
+  var objmtlLoad = new THREE.OBJLoader(manager);
+  var self=this;
   //velocidade de translação
   asteroide.velocity = Math.random()*0.5
   //velocidade de rotação
@@ -129,8 +133,6 @@ var Asteroide = function() {
   objmtlLoad.load(
     //modelo
     "obj/asteroide.obj",
-    //materialName
-    "obj/asteroide.mtl",
     //quando carregar-los
     function(object){
 
@@ -143,10 +145,19 @@ var Asteroide = function() {
       object.scale.set(6,6,6)
       asteroide.add(object)
       asteroide.position.set(-(diametro/2) + Math.random() * 100, -(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
-      this.loaded = true
+      self.loaded = true
     },
     onProgress
   )
+
+  this.resetar = function(z){
+    asteroide.velocity = Math.random()*0.5
+    asteroide.position.set(
+      -(diametro/2) + Math.random() * diametro,
+      -(diametro/2) + Math.random() * diametro,
+      z - 1500 - Math.random() * 1500
+    )
+  }
 
   this.atualizar = function(z) {
     //a cada frame atualizar a posição e a rotação
@@ -157,12 +168,7 @@ var Asteroide = function() {
 
     //se o asteroide passar da nave reiniciar a posição
     if(asteroide.position.z > z) {
-      asteroide.velocity = Math.random()*0.5
-      asteroide.position.set(
-        -(diametro/2) + Math.random() * diametro,
-        -(diametro/2) + Math.random() * diametro,
-        z - 1500 - Math.random() * 1500
-      )
+      this.resetar(z)
     }
   }
 
@@ -172,14 +178,16 @@ var Asteroide = function() {
   }
   return this
 }
-//---------------------------------Inimigo-------------------------------
+//-------------------------------inimigos-------------------------------
 var Inimigo = function() {
-
+  var carregado = false
   var inimigo = new THREE.Object3D()
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
-  this.loaded = false
+  self=this
+  this.carregado = false
   //velocidade de translação
-  inimigo.velocity = 0.7
+  inimigo.velocity = 0.5
+
   objmtlLoad.load(
     //modelo
     "obj/inimigo.obj",
@@ -190,11 +198,19 @@ var Inimigo = function() {
       object.scale.set(0.15,0.15,0.15)
       object.rotation.set( Math.PI, Math.PI, 0)
       inimigo.add(object)
-      inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
-      this.loaded = true
+      inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2)
+        + Math.random() * diametro, -1500 - Math.random() * 1500)
+      self.carregado = true
     },
     onProgress
   )
+  this.resetar = function(z){
+    inimigo.position.set(
+      -(diametro/2) + Math.random() * diametro,
+      -(diametro/2) + Math.random() * diametro,
+      z - 1500 - Math.random() * 1500
+    )
+  }
 
   this.atualizar = function(z) {
     //a cada frame atualizar a posição
@@ -202,11 +218,7 @@ var Inimigo = function() {
 
     //se o inimigo passar da nave reiniciar a posição
     if(inimigo.position.z > z) {
-      inimigo.position.set(
-        -(diametro/2) + Math.random() * diametro,
-        -(diametro/2) + Math.random() * diametro,
-        z - 1500 - Math.random() * 1500
-      )
+      this.resetar(z)
     }
   }
 
@@ -219,11 +231,9 @@ var Inimigo = function() {
 }
 
 
-
 //-----------------------------------------------------------------------
 
 
-var t=0
 //função de update de frame
 function render() {
   view.position.z-=1;
@@ -233,7 +243,7 @@ function render() {
 
   for(var i=0;i<N_OBJS;i++) {
     asteroides[i].atualizar(view.position.z)
-    inimigos[i].atualizar(view.position.z)
+    naveI.atualizar(view.position.z)
   }
 
 
@@ -258,12 +268,10 @@ for(var i = 0;i<N_OBJS;i++){
   Mundo.add(asteroides[i].getAsteroide())
 }
 
-//criando vetor para armazenar os inimigos
-var inimigos=[]
-for(var i = 0;i<N_OBJS;i++){
-  inimigos.push(new Inimigo())
-  Mundo.add(inimigos[i].getInimigo())
-}
+var naveI = new Inimigo()
+Mundo.add(naveI.getInimigo())
+
+
 
 
 
@@ -281,7 +289,7 @@ Mundo.add(mapa.getMapa())
 // }
 //---------//
 
-},{"./objmtlloader":3,"three":5,"three-world":4}],2:[function(require,module,exports){
+},{"./objloader":3,"./objmtlloader":4,"three":6,"three-world":5}],2:[function(require,module,exports){
 
 var THREE = require('three');
 THREE.MTLLoader = function( manager ) {
@@ -745,7 +753,389 @@ THREE.MTLLoader.nextHighestPowerOfTwo_ = function( x ) {
 
 THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
 
-},{"three":5}],3:[function(require,module,exports){
+},{"three":6}],3:[function(require,module,exports){
+ 
+var THREE = require('three');
+THREE.OBJLoader = function ( manager ) {
+
+	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+
+};
+
+THREE.OBJLoader.prototype = {
+
+	constructor: THREE.OBJLoader,
+
+	load: function ( url, onLoad, onProgress, onError ) {
+
+		var scope = this;
+
+		var loader = new THREE.XHRLoader( scope.manager );
+		loader.setCrossOrigin( this.crossOrigin );
+		loader.load( url, function ( text ) {
+
+			onLoad( scope.parse( text ) );
+
+		}, onProgress, onError );
+
+	},
+
+	setCrossOrigin: function ( value ) {
+
+		this.crossOrigin = value;
+
+	},
+
+	parse: function ( text ) {
+
+		console.time( 'OBJLoader' );
+
+		var object, objects = [];
+		var geometry, material;
+
+		function parseVertexIndex( value ) {
+
+			var index = parseInt( value );
+
+			return ( index >= 0 ? index - 1 : index + vertices.length / 3 ) * 3;
+
+		}
+
+		function parseNormalIndex( value ) {
+
+			var index = parseInt( value );
+
+			return ( index >= 0 ? index - 1 : index + normals.length / 3 ) * 3;
+
+		}
+
+		function parseUVIndex( value ) {
+
+			var index = parseInt( value );
+
+			return ( index >= 0 ? index - 1 : index + uvs.length / 2 ) * 2;
+
+		}
+
+		function addVertex( a, b, c ) {
+
+			geometry.vertices.push(
+				vertices[ a ], vertices[ a + 1 ], vertices[ a + 2 ],
+				vertices[ b ], vertices[ b + 1 ], vertices[ b + 2 ],
+				vertices[ c ], vertices[ c + 1 ], vertices[ c + 2 ]
+			);
+
+		}
+
+		function addNormal( a, b, c ) {
+
+			geometry.normals.push(
+				normals[ a ], normals[ a + 1 ], normals[ a + 2 ],
+				normals[ b ], normals[ b + 1 ], normals[ b + 2 ],
+				normals[ c ], normals[ c + 1 ], normals[ c + 2 ]
+			);
+
+		}
+
+		function addUV( a, b, c ) {
+
+			geometry.uvs.push(
+				uvs[ a ], uvs[ a + 1 ],
+				uvs[ b ], uvs[ b + 1 ],
+				uvs[ c ], uvs[ c + 1 ]
+			);
+
+		}
+
+		function addFace( a, b, c, d,  ua, ub, uc, ud, na, nb, nc, nd ) {
+
+			var ia = parseVertexIndex( a );
+			var ib = parseVertexIndex( b );
+			var ic = parseVertexIndex( c );
+			var id;
+
+			if ( d === undefined ) {
+
+				addVertex( ia, ib, ic );
+
+			} else {
+
+				id = parseVertexIndex( d );
+
+				addVertex( ia, ib, id );
+				addVertex( ib, ic, id );
+
+			}
+
+			if ( ua !== undefined ) {
+
+				ia = parseUVIndex( ua );
+				ib = parseUVIndex( ub );
+				ic = parseUVIndex( uc );
+
+				if ( d === undefined ) {
+
+					addUV( ia, ib, ic );
+
+				} else {
+
+					id = parseUVIndex( ud );
+
+					addUV( ia, ib, id );
+					addUV( ib, ic, id );
+
+				}
+
+			}
+
+			if ( na !== undefined ) {
+
+				ia = parseNormalIndex( na );
+				ib = parseNormalIndex( nb );
+				ic = parseNormalIndex( nc );
+
+				if ( d === undefined ) {
+
+					addNormal( ia, ib, ic );
+
+				} else {
+
+					id = parseNormalIndex( nd );
+
+					addNormal( ia, ib, id );
+					addNormal( ib, ic, id );
+
+				}
+
+			}
+
+		}
+
+		// create mesh if no objects in text
+
+		if ( /^o /gm.test( text ) === false ) {
+
+			geometry = {
+				vertices: [],
+				normals: [],
+				uvs: []
+			};
+
+			material = {
+				name: ''
+			};
+
+			object = {
+				name: '',
+				geometry: geometry,
+				material: material
+			};
+
+			objects.push( object );
+
+		}
+
+		var vertices = [];
+		var normals = [];
+		var uvs = [];
+
+		// v float float float
+
+		var vertex_pattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+
+		// vn float float float
+
+		var normal_pattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+
+		// vt float float
+
+		var uv_pattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+
+		// f vertex vertex vertex ...
+
+		var face_pattern1 = /f( +-?\d+)( +-?\d+)( +-?\d+)( +-?\d+)?/;
+
+		// f vertex/uv vertex/uv vertex/uv ...
+
+		var face_pattern2 = /f( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))?/;
+
+		// f vertex/uv/normal vertex/uv/normal vertex/uv/normal ...
+
+		var face_pattern3 = /f( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))?/;
+
+		// f vertex//normal vertex//normal vertex//normal ...
+
+		var face_pattern4 = /f( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))?/;
+
+		//
+
+		var lines = text.split( '\n' );
+
+		for ( var i = 0; i < lines.length; i ++ ) {
+
+			var line = lines[ i ];
+			line = line.trim();
+
+			var result;
+
+			if ( line.length === 0 || line.charAt( 0 ) === '#' ) {
+
+				continue;
+
+			} else if ( ( result = vertex_pattern.exec( line ) ) !== null ) {
+
+				// ["v 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
+
+				vertices.push(
+					parseFloat( result[ 1 ] ),
+					parseFloat( result[ 2 ] ),
+					parseFloat( result[ 3 ] )
+				);
+
+			} else if ( ( result = normal_pattern.exec( line ) ) !== null ) {
+
+				// ["vn 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
+
+				normals.push(
+					parseFloat( result[ 1 ] ),
+					parseFloat( result[ 2 ] ),
+					parseFloat( result[ 3 ] )
+				);
+
+			} else if ( ( result = uv_pattern.exec( line ) ) !== null ) {
+
+				// ["vt 0.1 0.2", "0.1", "0.2"]
+
+				uvs.push(
+					parseFloat( result[ 1 ] ),
+					parseFloat( result[ 2 ] )
+				);
+
+			} else if ( ( result = face_pattern1.exec( line ) ) !== null ) {
+
+				// ["f 1 2 3", "1", "2", "3", undefined]
+
+				addFace(
+					result[ 1 ], result[ 2 ], result[ 3 ], result[ 4 ]
+				);
+
+			} else if ( ( result = face_pattern2.exec( line ) ) !== null ) {
+
+				// ["f 1/1 2/2 3/3", " 1/1", "1", "1", " 2/2", "2", "2", " 3/3", "3", "3", undefined, undefined, undefined]
+
+				addFace(
+					result[ 2 ], result[ 5 ], result[ 8 ], result[ 11 ],
+					result[ 3 ], result[ 6 ], result[ 9 ], result[ 12 ]
+				);
+
+			} else if ( ( result = face_pattern3.exec( line ) ) !== null ) {
+
+				// ["f 1/1/1 2/2/2 3/3/3", " 1/1/1", "1", "1", "1", " 2/2/2", "2", "2", "2", " 3/3/3", "3", "3", "3", undefined, undefined, undefined, undefined]
+
+				addFace(
+					result[ 2 ], result[ 6 ], result[ 10 ], result[ 14 ],
+					result[ 3 ], result[ 7 ], result[ 11 ], result[ 15 ],
+					result[ 4 ], result[ 8 ], result[ 12 ], result[ 16 ]
+				);
+
+			} else if ( ( result = face_pattern4.exec( line ) ) !== null ) {
+
+				// ["f 1//1 2//2 3//3", " 1//1", "1", "1", " 2//2", "2", "2", " 3//3", "3", "3", undefined, undefined, undefined]
+
+				addFace(
+					result[ 2 ], result[ 5 ], result[ 8 ], result[ 11 ],
+					undefined, undefined, undefined, undefined,
+					result[ 3 ], result[ 6 ], result[ 9 ], result[ 12 ]
+				);
+
+			} else if ( /^o /.test( line ) ) {
+
+				geometry = {
+					vertices: [],
+					normals: [],
+					uvs: []
+				};
+
+				material = {
+					name: ''
+				};
+
+				object = {
+					name: line.substring( 2 ).trim(),
+					geometry: geometry,
+					material: material
+				};
+
+				objects.push( object )
+
+			} else if ( /^g /.test( line ) ) {
+
+				// group
+
+			} else if ( /^usemtl /.test( line ) ) {
+
+				// material
+
+				material.name = line.substring( 7 ).trim();
+
+			} else if ( /^mtllib /.test( line ) ) {
+
+				// mtl file
+
+			} else if ( /^s /.test( line ) ) {
+
+				// smooth shading
+
+			} else {
+
+				// console.log( "THREE.OBJLoader: Unhandled line " + line );
+
+			}
+
+		}
+
+		var container = new THREE.Object3D();
+
+		for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+			object = objects[ i ];
+			geometry = object.geometry;
+
+			var buffergeometry = new THREE.BufferGeometry();
+
+			buffergeometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( geometry.vertices ), 3 ) );
+
+			if ( geometry.normals.length > 0 ) {
+
+				buffergeometry.addAttribute( 'normal', new THREE.BufferAttribute( new Float32Array( geometry.normals ), 3 ) );
+
+			}
+
+			if ( geometry.uvs.length > 0 ) {
+
+				buffergeometry.addAttribute( 'uv', new THREE.BufferAttribute( new Float32Array( geometry.uvs ), 2 ) );
+
+			}
+
+			material = new THREE.MeshLambertMaterial();
+			material.name = object.material.name;
+
+			var mesh = new THREE.Mesh( buffergeometry, material );
+			mesh.name = object.name;
+
+			container.add( mesh );
+
+		}
+
+		console.timeEnd( 'OBJLoader' );
+
+		return container;
+
+	}
+
+};
+
+},{"three":6}],4:[function(require,module,exports){
  var THREE = require('three'),
     MTLLoader = require('./mtlloader');
 THREE.OBJMTLLoader = function ( manager ) {
@@ -1116,7 +1506,7 @@ THREE.OBJMTLLoader.prototype = {
 
 THREE.EventDispatcher.prototype.apply( THREE.OBJMTLLoader.prototype );
 
-},{"./mtlloader":2,"three":5}],4:[function(require,module,exports){
+},{"./mtlloader":2,"three":6}],5:[function(require,module,exports){
 var THREE = require('three');
 
 var World = (function() {
@@ -1215,7 +1605,7 @@ var World = (function() {
 
 module.exports = World;
 
-},{"three":5}],5:[function(require,module,exports){
+},{"three":6}],6:[function(require,module,exports){
 var self = self || {};// File:src/Three.js
 
 /**
