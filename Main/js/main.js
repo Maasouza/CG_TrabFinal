@@ -6,12 +6,37 @@ var THREE = require('three')
 var myLoader = require('./objmtlloader')
 
 
-//Numero de asteroides
-var N_AST = 5
+//Numero de asteroides e inimigos
+var N_OBJS = 3
+var diametro = 100
+itensCarregados = 0
+
 // material asteroide
 var astMaterial = new THREE.MeshLambertMaterial({
   map: THREE.ImageUtils.loadTexture('images/lua.png')
 })
+
+//gerenciador de carregamento
+var manager = new THREE.LoadingManager();
+manager.onProgress = function ( item, loaded, total ) {
+		console.log( item, loaded );
+    itensCarregados=loaded
+    var porcento = (itensCarregados/15)*100
+    document.getElementById("loading").innerHTML = "Carregando..."+Math.round(porcento, 2)+"%";
+    if(itensCarregados==15){
+      document.getElementById("loadDiv").style.display='none';
+      Mundo.start()
+    }
+};
+
+
+
+var onProgress = function ( xhr ) {
+  if ( xhr.lengthComputable ) {
+    var percentComplete = xhr.loaded / xhr.total * 100;
+		console.log( Math.round(percentComplete, 2) + '% downloaded' );
+	}
+};
 
 //---------------------------------Mapa---------------------------------------
 var Mapa = function(texPath) {
@@ -21,7 +46,7 @@ var Mapa = function(texPath) {
 
   //criando um malha
   formas.push(new THREE.Mesh(
-    new THREE.CylinderGeometry(100, 100, 5000, 24, 24, true),//forma cilindrica
+    new THREE.CylinderGeometry(diametro, diametro, 5000, 24, 24, true),//forma cilindrica
     new THREE.MeshBasicMaterial({//carregando a textura
       map: THREE.ImageUtils.loadTexture(texPath, null, function(textura) {
         textura.wrapS = textura.wrapT = THREE.RepeatWrapping
@@ -60,7 +85,7 @@ var Mapa = function(texPath) {
 var nave = null
 var Nave = function(sObject){
   //instanciando o loader
-  var objmtlLoad = new THREE.OBJMTLLoader();
+  var objmtlLoad = new THREE.OBJMTLLoader(manager);
   //definir modelo como nao carregado
   this.loaded = false
   //caso nao tenha uma nave
@@ -74,15 +99,16 @@ var Nave = function(sObject){
         //quando carrega-los
         function(object){
           //nave 30% do tamanho original
-          object.scale.set(0.1,0.1,0.1)
+          object.scale.set(0.025,0.025,0.025)
           object.rotation.set(0, Math.PI, 0)
-          object.position.set(0, -25, -100)
+          object.position.set(0, -25, -80)
           nave = object
           //ancorando a nave à um objeto
           sObject.add(nave)
           //definir nave como carregada
           this.loaded = true
-        }
+        },
+        onProgress
       )
     }
 }
@@ -92,10 +118,10 @@ var Nave = function(sObject){
 var Asteroide = function() {
 
   var asteroide = new THREE.Object3D()
-  var objmtlLoad = new THREE.OBJMTLLoader();
+  var objmtlLoad = new THREE.OBJMTLLoader(manager);
   this.loaded = false
   //velocidade de translação
-  asteroide.velocity = Math.random()*1.2
+  asteroide.velocity = Math.random()*0.5
   //velocidade de rotação
   asteroide.vRotation = new THREE.Vector3(Math.random(), Math.random(), Math.random())
 
@@ -103,7 +129,7 @@ var Asteroide = function() {
     //modelo
     "obj/asteroide.obj",
     //materialName
-    "obj/craft.mtl",
+    "obj/asteroide.mtl",
     //quando carregar-los
     function(object){
 
@@ -113,11 +139,12 @@ var Asteroide = function() {
 			   }
 			  }
       )
-      object.scale.set(8,8,8)
+      object.scale.set(6,6,6)
       asteroide.add(object)
-      asteroide.position.set(-50 + Math.random() * 100, -50 + Math.random() * 100, -1500 - Math.random() * 1500)
+      asteroide.position.set(-(diametro/2) + Math.random() * 100, -(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
       this.loaded = true
-    }
+    },
+    onProgress
   )
 
   this.atualizar = function(z) {
@@ -129,32 +156,84 @@ var Asteroide = function() {
 
     //se o asteroide passar da nave reiniciar a posição
     if(asteroide.position.z > z) {
-      asteroide.velocity = Math.random() * 2 + 2
+      asteroide.velocity = Math.random()*0.5
       asteroide.position.set(
-        -50 + Math.random() * 100,
-        -50 + Math.random() * 100,
+        -(diametro/2) + Math.random() * diametro,
+        -(diametro/2) + Math.random() * diametro,
         z - 1500 - Math.random() * 1500
       )
     }
   }
 
   this.getAsteroide = function() {
+    //retorna o objeto criado
     return asteroide
   }
   return this
 }
+//---------------------------------Inimigo-------------------------------
+var Inimigo = function() {
+
+  var inimigo = new THREE.Object3D()
+  var objmtlLoad = new THREE.OBJMTLLoader(manager);
+  this.loaded = false
+  //velocidade de translação
+  inimigo.velocity = 0.7
+  objmtlLoad.load(
+    //modelo
+    "obj/inimigo.obj",
+    //materialName
+    "obj/inimigo.mtl",
+    //quando carregar-los
+    function(object){
+      object.scale.set(0.15,0.15,0.15)
+      object.rotation.set( Math.PI, Math.PI, 0)
+      inimigo.add(object)
+      inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
+      this.loaded = true
+    },
+    onProgress
+  )
+
+  this.atualizar = function(z) {
+    //a cada frame atualizar a posição
+    inimigo.position.z += inimigo.velocity
+
+    //se o inimigo passar da nave reiniciar a posição
+    if(inimigo.position.z > z) {
+      inimigo.position.set(
+        -(diametro/2) + Math.random() * diametro,
+        -(diametro/2) + Math.random() * diametro,
+        z - 1500 - Math.random() * 1500
+      )
+    }
+  }
+
+  this.getInimigo = function() {
+    //retorna o objeto criado
+    return inimigo
+  }
+
+  return this
+}
+
+
 
 //-----------------------------------------------------------------------
 
 
-
+var t=0
 //função de update de frame
 function render() {
   view.position.z-=1;
   //atualizar a posição da nave(camera)
   mapa.atualizarZ(view.position.z)
   //atualizar a posição dos asteroides
-  for(var i=0;i<N_AST;i++) asteroides[i].atualizar(view.position.z)
+
+  for(var i=0;i<N_OBJS;i++) {
+    asteroides[i].atualizar(view.position.z)
+    inimigos[i].atualizar(view.position.z)
+  }
 
 
 }
@@ -162,12 +241,6 @@ function render() {
 //Iniciando o mundo
 Mundo.init({ renderCallback: render,clearColor: 0x0000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
-//criando vetor para armazenar os asteroides
-var asteroides = []
-for(var i = 0;i<N_AST;i++){
-  asteroides.push(new Asteroide())
-  Mundo.add(asteroides[i].getAsteroide())
-}
 //criando um mapa
 var mapa = new Mapa('images/1.jpg')
 
@@ -176,6 +249,21 @@ var view  = Mundo.getCamera()
 
 //criando nova nave
 var nave = new Nave(view)
+
+//criando vetor para armazenar os asteroides
+var asteroides = []
+for(var i = 0;i<N_OBJS;i++){
+  asteroides.push(new Asteroide())
+  Mundo.add(asteroides[i].getAsteroide())
+}
+
+//criando vetor para armazenar os inimigos
+var inimigos=[]
+for(var i = 0;i<N_OBJS;i++){
+  inimigos.push(new Inimigo())
+  Mundo.add(inimigos[i].getInimigo())
+}
+
 
 
 //efeito de nuvem para suavizar o fundo
@@ -187,5 +275,7 @@ Mundo.add(mapa.getMapa())
 
 
 //----------//
-Mundo.start()
+// if(itensCarregados==15){
+//   Mundo.start()
+// }
 //---------//

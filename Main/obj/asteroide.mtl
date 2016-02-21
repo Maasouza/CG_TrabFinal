@@ -15,4 +15,4 @@ newmtl asteroid
 	map_Ka maps\Map__15_Noise.tga
 	map_Kd maps\Map__15_Noise.tga
 	map_Ke maps\Map__12_Cellular.tga
-	map_bump -bm 0.800000 maps\Map__4_Mix.tga
+	map_bump maps\Map__4_Mix.tga

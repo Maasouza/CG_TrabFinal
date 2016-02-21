@@ -1,0 +1,40 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Users\\Marcos Filho\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'run',
+1 verbose cli   'dev' ]
+2 info using npm@2.7.5
+3 info using node@v4.2.5
+4 verbose run-script [ 'predev', 'dev', 'postdev' ]
+5 info predev trabalhofinalcg@1.0.0
+6 info dev trabalhofinalcg@1.0.0
+7 verbose unsafe-perm in lifecycle true
+8 info trabalhofinalcg@1.0.0 Failed to exec dev script
+9 verbose stack Error: trabalhofinalcg@1.0.0 dev: `watchify js/main.js -v -o app.js`
+9 verbose stack Exit status 1
+9 verbose stack     at EventEmitter.<anonymous> (C:\Users\Marcos Filho\AppData\Roaming\npm\node_modules\npm\lib\utils\lifecycle.js:213:16)
+9 verbose stack     at emitTwo (events.js:87:13)
+9 verbose stack     at EventEmitter.emit (events.js:172:7)
+9 verbose stack     at ChildProcess.<anonymous> (C:\Users\Marcos Filho\AppData\Roaming\npm\node_modules\npm\lib\utils\spawn.js:14:12)
+9 verbose stack     at emitTwo (events.js:87:13)
+9 verbose stack     at ChildProcess.emit (events.js:172:7)
+9 verbose stack     at maybeClose (internal/child_process.js:821:16)
+9 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
+10 verbose pkgid trabalhofinalcg@1.0.0
+11 verbose cwd C:\Program Files (x86)\EasyPHP-DevServer-14.1VC11\data\localweb\projects\cg
+12 error Windows_NT 10.0.10586
+13 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Users\\Marcos Filho\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js" "run" "dev"
+14 error node v4.2.5
+15 error npm  v2.7.5
+16 error code ELIFECYCLE
+17 error trabalhofinalcg@1.0.0 dev: `watchify js/main.js -v -o app.js`
+17 error Exit status 1
+18 error Failed at the trabalhofinalcg@1.0.0 dev script 'watchify js/main.js -v -o app.js'.
+18 error This is most likely a problem with the trabalhofinalcg package,
+18 error not with npm itself.
+18 error Tell the author that this fails on your system:
+18 error     watchify js/main.js -v -o app.js
+18 error You can get their info via:
+18 error     npm owner ls trabalhofinalcg
+18 error There is likely additional logging output above.
+19 verbose exit [ 1, true ]
