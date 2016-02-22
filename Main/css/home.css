@@ -31,10 +31,14 @@ background-size: cover;
 z-index: 0;
 }
 
-#info,#cred{
+#info{
   border-radius: 5px;
   box-shadow: 1px 1px 5px 5px #1d4063;
-  background: #333;
+  background-color: #000;
+  background-image: url(../images/infos.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   position: absolute;
   width: 70%;
   height: 70%;
@@ -44,7 +48,25 @@ z-index: 0;
   display: none;
   color: #000;
   cursor:default;
-  transition: 2s;
+}
+
+#cred{
+  border-radius: 5px;
+  box-shadow: 1px 1px 5px 5px #1d4063;
+  background-color: #000;
+  background-image: url(../images/creditos.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  top:15%;
+  left:15%;
+  z-index:3;
+  display: none;
+  color: #000;
+  cursor:default;
 }
 
 
