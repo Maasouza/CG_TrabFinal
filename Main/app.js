@@ -8,6 +8,8 @@ var THREE = require('three')
 var myLoader = require('./objmtlloader')
 var myLoaderOBJ = require('./objloader')
 
+//flag audio
+var on = true
 
 //Numero de asteroides e inimigos
 var N_OBJS = 5
@@ -33,7 +35,6 @@ manager.onLoad = function(){
   document.getElementById("loadDiv").style.display='none';
   Mundo.start()
 }
-
 
 
 var onProgress = function ( xhr ) {
@@ -127,7 +128,7 @@ var Asteroide = function() {
   var objmtlLoad = new THREE.OBJLoader(manager);
   var self=this;
   //velocidade de translação
-  asteroide.velocity = Math.random()*0.5
+  asteroide.velocity = Math.random()*0.8
   //velocidade de rotação
   asteroide.vRotation = new THREE.Vector3(Math.random(), Math.random(), Math.random())
 
@@ -152,7 +153,7 @@ var Asteroide = function() {
   )
 
   this.resetar = function(z){
-    asteroide.velocity = Math.random()*0.5
+    asteroide.velocity = Math.random()*0.8
     asteroide.position.set(
       -(diametro/2) + Math.random() * diametro,
       -(diametro/2) + Math.random() * diametro,
@@ -187,7 +188,7 @@ var Inimigo = function() {
   self=this
   this.carregado = false
   //velocidade de translação
-  inimigo.velocity = 0.5
+  inimigo.velocity = 1
 
   objmtlLoad.load(
     //modelo
@@ -244,8 +245,10 @@ function render() {
 
   for(var i=0;i<N_OBJS;i++) {
     asteroides[i].atualizar(view.position.z)
-    naveI.atualizar(view.position.z)
   }
+
+  naveI.atualizar(view.position.z)
+  console.log(view.position.x,view.position.y)
 
 
 }
@@ -269,10 +272,9 @@ for(var i = 0;i<N_OBJS;i++){
   Mundo.add(asteroides[i].getAsteroide())
 }
 
-var naveI = new Inimigo()
-Mundo.add(naveI.getInimigo())
 
-
+  var naveI = new Inimigo()
+  Mundo.add(naveI.getInimigo())
 
 
 
@@ -284,11 +286,32 @@ Mundo.add(view)
 Mundo.add(mapa.getMapa())
 
 
-//----------//
-// if(itensCarregados==15){
-//   Mundo.start()
-// }
-//---------//
+//---------------------------------eventos------------------------------------
+window.addEventListener('keydown',
+function(e) {
+    if(e.keyCode == 37 && (view.position.x>-(diametro-23)) ) {//23 para compensar o tamanho da nave e a posiçao dela em relação a camera
+       view.position.x -= 2
+    }else{
+      if(e.keyCode == 39 && (view.position.x<(diametro-23)))  view.position.x += 2
+    }
+
+    if(e.keyCode == 38  && (view.position.y<(diametro-1))) {// para compensar o tamanho da nave e a posiçao dela em relação a camera
+       view.position.y += 2
+    }else{
+      if(e.keyCode == 40 && (view.position.y>-(diametro-27)))  view.position.y -= 2
+    }
+    if(e.keyCode == 77){//m
+      var audio = document.getElementById("backgroundAudio");
+      if(on){
+        audio.pause();
+        on=false
+      }else{
+        audio.play()
+        on=true
+      }
+    }
+}
+)
 
 },{"./objloader":3,"./objmtlloader":4,"three":6,"three-world":5}],2:[function(require,module,exports){
 

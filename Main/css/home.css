@@ -31,6 +31,23 @@ background-size: cover;
 z-index: 0;
 }
 
+#info,#cred{
+  border-radius: 5px;
+  box-shadow: 1px 1px 5px 5px #1d4063;
+  background: #333;
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  top:15%;
+  left:15%;
+  z-index:3;
+  display: none;
+  color: #000;
+  cursor:default;
+  transition: 2s;
+}
+
+
 .grad{
 position: absolute;
 top: -20px;
