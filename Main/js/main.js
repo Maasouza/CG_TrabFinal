@@ -250,6 +250,7 @@ function render() {
   console.log(view.position.x,view.position.y)
 
 
+
 }
 
 //Iniciando o mundo
@@ -270,6 +271,7 @@ for(var i = 0;i<N_OBJS;i++){
   asteroides.push(new Asteroide())
   Mundo.add(asteroides[i].getAsteroide())
 }
+
 
 
   var naveI = new Inimigo()
