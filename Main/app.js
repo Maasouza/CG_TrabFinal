@@ -24,11 +24,12 @@ manager.onProgress = function ( item, loaded, total ) {
 		console.log( item, loaded,total);
     var porcento = (loaded/total)*100
     //atualiza a % da tela de carregamento
-    document.getElementById("loading").innerHTML = "Carregando "+item+" ..."+Math.round(porcento, 2)+"%";
+    document.getElementById("loading").innerHTML = "Carregando "+item+" ... "+Math.round(porcento, 2)+"%";
 };
 //quando todos os modelos tiverem carregados
 manager.onLoad = function(){
   //retirar a tela de carregamento e iniciar o jogo
+  document.getElementById("backgroundAudio").play();
   document.getElementById("loadDiv").style.display='none';
   Mundo.start()
 }

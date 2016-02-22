@@ -23,6 +23,7 @@
   <script>
     function changeVolume(value){
       var audio = document.getElementById("backgroundAudio");
+      audio.pause();
       audio.volume = value;
     }
   </script>
