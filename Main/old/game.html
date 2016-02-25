@@ -1,0 +1,40 @@
+<html lang="pt_br">
+<head>
+  <meta charset="utf-8">
+  <title>Space Traitor</title>
+      <link rel="shortcut icon" href="images/logo.ico">
+
+  <style>
+    html, body {
+      padding: 0;
+      margin:  0;
+      height: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #loadDiv{
+      background: url("images/0.jpg");
+      color: #EDED0C;
+      width: 100%;
+      height:100%;
+    }
+
+  </style>
+  <script>
+    function changeVolume(value){
+      var audio = document.getElementById("backgroundAudio");
+      audio.pause();
+      audio.volume = value;
+    }
+  </script>
+</head>
+<body>
+  <audio id='backgroundAudio' style="display=hidden;"loop="loop" autoplay="autoplay" onloadeddata="changeVolume(0.3)">
+    <source src="audio/game.mp3" />
+  </audio>
+  <div align="center" id="loadDiv">
+    <h1 id="loading">Carregando</h1>
+  </div>
+  <script src="app.js"></script>
+  </body>
+</html>

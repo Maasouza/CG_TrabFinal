@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <meta charset="UTF-8"  http-equiv="refresh" content="38;url=menu.html" />
+	      <link rel="shortcut icon" href="images/logo.ico">
+
+    <link href="css/rollingText.css" id="cm-theme" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <script>
+  function changeVolume(value){
+    var audio = document.getElementById("backgroundAudio");
+    audio.volume = value;
+  }
+  </script>
+
+  <body>
+    <audio style="display=hidden;"loop="loop" autoplay="autoplay" id="backgroundAudio"  onloadeddata="changeVolume(0.3)">
+      <source src="audio/start.mp3" />
+    </audio>
+    <p id="start">Em um per&iacute;odo eterno, conhecido como 2015.2 ...</p>
+
+    <h2>SPACE TRAITOR<sub>Trabalho de CG</sub></h2>
+
+    <div id="titles">
+      <div id="titlecontent">
+
+        <p class="center">EPISODE X<br />
+        O Trabalho Final</p>
+        <p>Após a destruição da sua pseudo estrela da morte, a Primeira Ordem não espera muito tempo para o próximo ataque.</p>
+        <p>Focando desta vez nos jovens, eles criam um semestre sem fim nas universidades.</p>
+        <p>Você, Finn, um ex stormtrooper cansado do período eterno, resolve fugir do controle da Primeira Ordem.</p>
+        <p>Desvie dos asteroides, destrua as naves inimigas e colete os stormtroopers a deriva para dar fim a esse semestre.</p>
+
+  </div>
+    </div>
+  </body>
