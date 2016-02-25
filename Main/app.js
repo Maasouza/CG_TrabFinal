@@ -12,7 +12,7 @@ var myLoaderOBJ = require('./objloader')
 var on = true
 
 //Numero de asteroides e inimigos
-var N_OBJS = 10
+var N_OBJS = 11
 var diametro = 100
 
 // material asteroide
@@ -35,7 +35,6 @@ manager.onLoad = function(){
   document.getElementById("loadDiv").style.display='none';
   Mundo.start()
 }
-
 
 var onProgress = function ( xhr ) {
   if ( xhr.lengthComputable ) {
@@ -89,11 +88,14 @@ var Mapa = function(texPath) {
 
 var nave = null
 var Nave = function(sObject){
+  //
+  var pontos
   //funcionar dentro das outras funçoes
   var self=this
   //criando o hitbox
   self.hitbox = new THREE.Box3()
   nave = null
+  this.pontos = 0
   var loaded = false
   //instanciando o loader
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
@@ -120,7 +122,6 @@ var Nave = function(sObject){
           self.hitbox.setFromObject(object)//copia a posição e as dimensoes do objeto
           //definir nave como carregada
           self.loaded = true
-          console.log("Nave = "+self.loaded)
         },
         onProgress
       )
@@ -145,10 +146,10 @@ var Asteroide = function() {
   var objmtlLoad = new THREE.OBJLoader(manager);
   var self=this;
 
-  this.hitbox = new THREE.Box3()
+   this.hitbox = new THREE.Box3()
 
   //velocidade de translação
-  asteroide.velocity = Math.random()*1.5
+  asteroide.velocity = Math.random()*3.5 + 1.0
   //velocidade de rotação
   asteroide.vRotation = new THREE.Vector3(Math.random(), Math.random(), Math.random())
 
@@ -169,14 +170,13 @@ var Asteroide = function() {
       //randomizando a posiçao do asteroide dentro do cilindro
       asteroide.position.set(-(diametro/2) + Math.random() * 100, -(diametro/2) + Math.random() * diametro, -1500 - Math.random() * 1500)
       self.loaded = true
-      console.log("Asteroide = "+self.loaded)
 
     },
     onProgress
   )
 
   this.resetar = function(z){
-    asteroide.velocity = Math.random()*1.5
+    asteroide.velocity = Math.random()*3.5 + 1
     asteroide.position.set(
       -(diametro/2) + Math.random() * diametro,
       -(diametro/2) + Math.random() * diametro,
@@ -187,9 +187,9 @@ var Asteroide = function() {
   this.atualizar = function(z) {
     //a cada frame atualizar a posição e a rotação
     asteroide.position.z += asteroide.velocity
-    asteroide.rotation.x += asteroide.vRotation.x * 0.02;
-    asteroide.rotation.y += asteroide.vRotation.y * 0.02;
-    asteroide.rotation.z += asteroide.vRotation.z * 0.02;
+    asteroide.rotation.x += asteroide.vRotation.x * 0.05;
+    asteroide.rotation.y += asteroide.vRotation.y * 0.05;
+    asteroide.rotation.z += asteroide.vRotation.z * 0.05;
     //se existir um
     if(asteroide.children.length > 0) this.hitbox.setFromObject(asteroide.children[0])
 
@@ -205,7 +205,9 @@ var Asteroide = function() {
   }
   return this
 }
+
 //-------------------------------inimigos-------------------------------
+
 var Inimigo = function() {
   var carregado = false
   var inimigo = new THREE.Object3D()
@@ -213,7 +215,9 @@ var Inimigo = function() {
   var self=this
   this.loaded = false
   //velocidade de translação
-  inimigo.velocity = 1.5
+  inimigo.velocity = 4
+  //
+  this.hitbox = new THREE.Box3()
 
   objmtlLoad.load(
     //modelo
@@ -228,7 +232,6 @@ var Inimigo = function() {
       inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2)
         + Math.random() * diametro, -1500 - Math.random() * 1500)
       self.loaded = true
-      console.log("Inimigo = "+self.carregado)
 
     },
     onProgress
@@ -244,6 +247,7 @@ var Inimigo = function() {
   this.atualizar = function(z) {
     //a cada frame atualizar a posição
     inimigo.position.z += inimigo.velocity
+    if(inimigo.children.length > 0) this.hitbox.setFromObject(inimigo.children[0])
 
     //se o inimigo passar da nave reiniciar a posição
     if(inimigo.position.z > z) {
@@ -259,31 +263,78 @@ var Inimigo = function() {
   return this
 }
 
+//--------------------------Tiro-----------------------------------------
+
+var municao = new  THREE.MeshBasicMaterial({  //material do tiro
+  color: 0xffff66
+})
+
+var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
+  var objTiro = null
+
+  this.objTiro  = new THREE.Mesh(
+    new THREE.SphereGeometry(1,16,16), //geometria do tiro
+    municao//material
+  )
+
+  this.hitbox = new THREE.Box3()
+
+  this.objTiro.position.copy(p)
+
+  this.getTiro = function(){
+    return this.objTiro
+  }
+
+  this.atualizar = function(z){
+    this.objTiro.position.z -=8
+    this.hitbox.setFromObject(this.objTiro)
+
+    if(Math.abs(this.objTiro.position.z - z) > 1000){
+      return false
+      delete this.objTiro
+    }
+    return true
+  }
+
+  return this
+}
 
 //-----------------------------------------------------------------------
 
 
-//função de update de frame
 function render() {
-  view.position.z-=1;
+  update()
+}
+
+//função de update de frame
+var update = function(){
+  view.position.z-=2;
   //atualizar a posição da nave(camera)
   mapa.atualizarZ(view.position.z)
   //atualizar a posiçao do hitbox da nave
   jogador.atualizar()
-  console.log("jogador = "+jogador.loaded)
+
   //atualizar a posição dos asteroides
   for(var i=0;i<N_OBJS;i++) {
     if(!asteroides[i].loaded)continue
-
     asteroides[i].atualizar(view.position.z)
     if(jogador.loaded && jogador.hitbox.isIntersectionBox(asteroides[i].hitbox)){
       asteroides[i].resetar(view.position.z)
     }
-    console.log("Asteroide = "+asteroides[i].loaded+" "+i)
+  }
+  naveI.atualizar(view.position.z)
+  if(jogador.loaded && jogador.hitbox.isIntersectionBox(naveI.hitbox)){
+    naveI.resetar(view.position.z)
+    jogador.pontos+=10
   }
 
-  naveI.atualizar(view.position.z)
-  console.log("ini "+naveI.loaded)
+  for(var i=0; i<tiros.length; i++){ //removendo o tiro
+    if(!tiros[i].atualizar(view.position.z)){
+      Mundo.getScene().remove(tiros[i].getTiro())
+      tiros.splice(i, 1)
+    }
+  }
+
 }
 
 //Iniciando o mundo
@@ -298,6 +349,10 @@ var view  = Mundo.getCamera()
 //criando nova nave
 var jogador = new Nave(view)
 
+//criando o vetor de tiros
+var tiros =[]
+
+
 //criando vetor para armazenar os asteroides
 var asteroides = []
 for(var i = 0;i<N_OBJS;i++){
@@ -305,11 +360,8 @@ for(var i = 0;i<N_OBJS;i++){
   Mundo.add(asteroides[i].getAsteroide())
 }
 
-
-
-  var naveI = new Inimigo()
-  Mundo.add(naveI.getInimigo())
-
+var naveI = new Inimigo()
+Mundo.add(naveI.getInimigo())
 
 
 //efeito de nuvem para suavizar o fundo
@@ -319,21 +371,45 @@ Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 Mundo.add(view)
 Mundo.add(mapa.getMapa())
 
-
 //---------------------------------eventos------------------------------------
+var origem = new THREE.Vector2(0,0)
+var navePos = new THREE.Vector2(0,0)
 window.addEventListener('keydown',
-function(e) {
-    if(e.keyCode == 37 && (view.position.x>-(diametro-23)) ) {//23 para compensar o tamanho da nave e a posiçao dela em relação a camera
+ function(e) {
+
+    if(e.keyCode == 37 ) {
+      navePos.x=view.position.x-23//compensar a largura da nave
+      navePos.y=view.position.y-25
+      if(origem.distanceTo(navePos)<100){
        view.position.x -= 2
+      }
     }else{
-      if(e.keyCode == 39 && (view.position.x<(diametro-23)))  view.position.x += 2
+      if(e.keyCode == 39 ){
+        navePos.x=view.position.x+23
+        navePos.y=view.position.y-25
+        if(origem.distanceTo(navePos)<100){
+         view.position.x += 2
+        }
+      }
     }
 
-    if(e.keyCode == 38  && (view.position.y<(diametro-1))) {// para compensar o tamanho da nave e a posiçao dela em relação a camera
+    if(e.keyCode == 38 ) {
+      navePos.x=view.position.x
+      navePos.y=view.position.y-20
+      if(origem.distanceTo(navePos)<100){
        view.position.y += 2
+      }
     }else{
-      if(e.keyCode == 40 && (view.position.y>-(diametro-27)))  view.position.y -= 2
+      if(e.keyCode == 40){
+        navePos.x=view.position.x
+        navePos.y=view.position.y-30
+        if(origem.distanceTo(navePos)<100){
+         view.position.y -= 2
+        }
+
+      }
     }
+
     if(e.keyCode == 77){//m
       var audio = document.getElementById("backgroundAudio");
       if(on){
@@ -346,6 +422,19 @@ function(e) {
     }
 }
 )
+
+  window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
+  switch (e.keyCode) {
+    case 32: //espaÃ§o
+      var posicaoTiro = new THREE.Vector3(0,0,0)
+      posicaoTiro = view.position.clone()
+      posicaoTiro.sub(new THREE.Vector3(0,25,80)) //subtraindo a posiÃ§Ã£o da nave em relaÃ§Ã£o a cÃ¢mera
+      var tiro = new Tiro(posicaoTiro)
+      tiros.push(tiro)
+      Mundo.add(tiro.getTiro())
+      break;
+  }
+})
 
 },{"./objloader":3,"./objmtlloader":4,"three":6,"three-world":5}],2:[function(require,module,exports){
 
