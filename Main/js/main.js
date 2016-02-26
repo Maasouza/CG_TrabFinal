@@ -334,6 +334,51 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
 }
 
 //-----------------------------------------------------------------------
+var teclado = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+var ang = 0
+var updatePos = function(){
+  var delta = clock.getDelta()
+  var distancia = 60*delta;
+  var angulo = Math.PI/5*delta;
+  if(teclado.pressed("left")){
+    view.position.x-=distancia;
+    if(ang>-Math.PI/8){
+    view.children[0].rotation.z-=angulo
+    ang-=angulo
+    }
+  }
+  if(teclado.pressed("right")){
+    view.position.x+=distancia;
+    if(ang<Math.PI/8){
+    view.children[0].rotation.z+=angulo
+    ang+=angulo
+    }
+  }
+  if(!teclado.pressed("right") && !teclado.pressed("left")){
+    if(ang>Math.PI/90){
+      view.children[0].rotation.z-=angulo
+      ang-=angulo
+    }else{//corrigir bug de tremer o objeto por  variar angulos pequenos
+      if(ang<-Math.PI/90){
+        view.children[0].rotation.z+=angulo
+        ang+=angulo
+      }else{
+        view.children[0].rotation.z=0
+        ang=0
+      }
+    }
+  }
+
+
+  if(teclado.pressed("up")){
+    view.position.y+=distancia;
+  }else{
+    if(teclado.pressed("down")){
+    view.position.y-=distancia;
+  }}
+
+}
 
 //função de update de frame
 function render() {
@@ -390,6 +435,7 @@ function render() {
           break
         }
       }
+      updatePos()
   }
 
   naveI.atualizar(view.position.z)
@@ -406,7 +452,8 @@ function render() {
           destruir.play()
         }else{
           destruir2.play()
-        }         naveI.resetar(view.position.z)
+        }
+        naveI.resetar(view.position.z)
         Mundo.getScene().remove(tiros[j].getTiro())
         tiros.splice(j, 1)
         if(jogador.pontos>=10){
@@ -420,8 +467,6 @@ function render() {
     mira.geometry.vertices[0] = view.position.clone().add(new THREE.Vector3(0,-25,-80))
     mira.geometry.vertices[1] = view.position.clone().add(new THREE.Vector3(0,-25,-9999999))
     mira.geometry.verticesNeedUpdate = true;
-    console.log("mira p0 "+mira.geometry.vertices[0].z+" p1 "+mira.geometry.vertices[1].z)
-    console.log("nave "+view.position.z)
 
     if(jogador.vida==0){
       gameoverState()
@@ -434,21 +479,25 @@ var gameoverState = function(){
   document.getElementById("backgroundAudio").pause()
   gameover.play()
   document.getElementById("infobar").style.display='none';
+  document.getElementById("pontuacao").innerHTML = "Pontos : "+jogador.pontos;
   document.getElementById("backgroundMenu").style.display="block";
-
 }
 
-var resetarMundo = function(){
+window.resetarMundo = function(){
+  ang=0
   //resetando a posição do asteroides,nave e removendo os tiros
   for(var i = 0;i<asteroides.length;i++){
-      asteroides[i].resetar()
+      asteroides[i].resetar(view.position.z)
   }
-  naveI.resetar()
+  naveI.resetar(view.position.z)
   for(var i=0; i<tiros.length; i++){ //removendo o tiro
-          Mundo.getScene().remove(tiros[i].getTiro())
+          Mundo.remove(tiros[i].getTiro())
       tiros.splice(i, 1)
   }
+
   gameover.pause();
+  document.getElementById("infobar").style.display='block';
+  document.getElementById("backgroundMenu").style.display="none";
 
   //resetar dados da infobar
   document.getElementById('vida').textContent = "♥ ♥ ♥"
@@ -457,15 +506,19 @@ var resetarMundo = function(){
   //resetando a vida e os pontos do jogador
   jogador.vida=3
   jogador.pontos=0
-  view.position.sub(view.position)
+
+  view.position.x=0
+  view.position.y=0
+
+  document.getElementById("backgroundAudio").play()
   Mundo.resume()
 }
 
 //teste mira
 var mtMira = new THREE.LineBasicMaterial({
-  color:0xFF1100,
+  color:0xFFFFFF,
   transparent:true,
-  opacity:0.6
+  opacity:0.4
 })
 
 var geoMira = new THREE.Geometry()
@@ -473,8 +526,6 @@ geoMira.vertices.push(
   new THREE.Vector3( 0, -25, 0 ),
 	new THREE.Vector3( 0, -25,-1000 )
 )
-
-
 
 var mira = new THREE.Line(geoMira,mtMira)
 
@@ -491,7 +542,6 @@ var view  = Mundo.getCamera()
 //criando nova nave
 var jogador = new Nave(view)
 
-//criando o vetor de tiros
 var tiros =[]
 
 //criando vetor para armazenar os asteroides
@@ -516,23 +566,6 @@ Mundo.add(mapa.getMapa())
 window.addEventListener('keydown',
  function(e) {
 
-    if(e.keyCode == 37 ) {
-       view.position.x -= 2
-    }else{
-      if(e.keyCode == 39 ){
-         view.position.x += 2
-        }
-      }
-
-
-    if(e.keyCode == 38 ) {
-       view.position.y += 2
-    }else{
-      if(e.keyCode == 40){
-         view.position.y -= 2
-      }
-    }
-
     if(e.keyCode == 77){//m
       var audio = document.getElementById("backgroundAudio");
       if(on){
@@ -545,9 +578,9 @@ window.addEventListener('keydown',
     }
 }
 )
-  
 
-  window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
+
+window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
   switch (e.keyCode) {
     case 32: //espaÃ§o
       var posicaoTiro = new THREE.Vector3(0,0,0)
