@@ -8,7 +8,36 @@ var THREE = require('three')
 var myLoader = require('./objmtlloader')
 var myLoaderOBJ = require('./objloader')
 
-//flag audio
+//funçoes e variaves
+var somTiro = new Audio("audio/tiro.mp3")
+var somTiro2 = new Audio("audio/tiro.mp3")//caso o deltaT entre os tiros seja pequeno
+somTiro.volume = 0.5
+somTiro2.volume = 0.5
+
+//meteoro batendo na nave
+var somMeteoro = new Audio("audio/explosao.mp3")
+somMeteoro.volume = 0.5
+
+//capturando uma nave
+var captura = new Audio("audio/item.mp3")
+captura.volume = 0.5
+
+//destruindo uma nave ou meteoro
+var destruir = new Audio("audio/asteroide.mp3")
+var destruir2 = new Audio("audio/asteroide.mp3")//mesmo motivo do somTiro2
+destruir2.volume =0.5
+destruir.volume = 0.5
+
+//audio menu gameover
+var gameover = new Audio("audio/gameover.mp3")
+gameover.volume = 0.5
+gameover.loop = true
+
+//audio 0 vidas
+var nolife = new Audio("audio/navelife.mp3")
+nolife.volume = 0.5
+
+//flag audio musica
 var on = true
 
 //Numero de asteroides e inimigos
@@ -33,6 +62,8 @@ manager.onLoad = function(){
   //retirar a tela de carregamento e iniciar o jogo
   document.getElementById("backgroundAudio").play();
   document.getElementById("loadDiv").style.display='none';
+  document.getElementById("infobar").style.display='block';
+
   Mundo.start()
 }
 
@@ -313,7 +344,6 @@ function render() {
   //atualizar a posiçao do hitbox da nave
   jogador.atualizar()
 
-
   for(var i=0; i<tiros.length; i++){ //removendo o tiro
     if(!tiros[i].atualizar(view.position.z)){
       Mundo.getScene().remove(tiros[i].getTiro())
@@ -327,12 +357,34 @@ function render() {
     asteroides[i].atualizar(view.position.z)
     if(jogador.loaded && jogador.hitbox.isIntersectionBox(asteroides[i].hitbox)){
       asteroides[i].resetar(view.position.z)
-      somMeteoro.play()
+      if(jogador.vida>1) {
+        somMeteoro.play()
+      }else{
+        nolife.play()
+      }
+      switch (jogador.vida) {
+        case 3:{
+                document.getElementById('vida').textContent = "♥ ♥"
+                break;
+               }
+        case 2:{
+                document.getElementById('vida').textContent = "♥"
+                break;
+               }
+        default:break;
+
+      }
       jogador.vida-=1
     }
     for(var j=0; j<tiros.length; j++) {
         if(asteroides[i].hitbox.isIntersectionBox(tiros[j].hitbox)) {
+          if(destruir.paused){
+            destruir.play()
+          }else{
+            destruir2.play()
+          }
           jogador.pontos+=asteroides[i].pontosDados
+          document.getElementById('pontos').textContent = jogador.pontos
           asteroides[i].resetar(view.position.z)
           Mundo.getScene().remove(tiros[j].getTiro())
           tiros.splice(j, 1)
@@ -343,30 +395,94 @@ function render() {
 
   naveI.atualizar(view.position.z)
   if(jogador.loaded && jogador.hitbox.isIntersectionBox(naveI.hitbox)){
+    captura.play()
     naveI.resetar(view.position.z)
     jogador.pontos+=25
+    document.getElementById('pontos').textContent = jogador.pontos
   }
 
   for(var j=0; j<tiros.length; j++) {
       if(naveI.hitbox.isIntersectionBox(tiros[j].hitbox)) {
-        naveI.resetar(view.position.z)
+        if(destruir.paused){
+          destruir.play()
+        }else{
+          destruir2.play()
+        }         naveI.resetar(view.position.z)
         Mundo.getScene().remove(tiros[j].getTiro())
         tiros.splice(j, 1)
         if(jogador.pontos>=10){
           jogador.pontos-=10
+          document.getElementById('pontos').textContent = jogador.pontos
         }
         break
       }
     }
 
-    console.log("pontos :"+jogador.pontos)
+    mira.geometry.vertices[0] = view.position.clone().add(new THREE.Vector3(0,-25,-80))
+    mira.geometry.vertices[1] = view.position.clone().add(new THREE.Vector3(0,-25,-9999999))
+    mira.geometry.verticesNeedUpdate = true;
+    console.log("mira p0 "+mira.geometry.vertices[0].z+" p1 "+mira.geometry.vertices[1].z)
+    console.log("nave "+view.position.z)
+
+    if(jogador.vida==0){
+      gameoverState()
+    }
+
 }
 
+var gameoverState = function(){
+  Mundo.pause();
+  document.getElementById("backgroundAudio").pause()
+  gameover.play()
+  document.getElementById("infobar").style.display='none';
+  document.getElementById("backgroundMenu").style.display="block";
 
+}
+
+var resetarMundo = function(){
+  //resetando a posição do asteroides,nave e removendo os tiros
+  for(var i = 0;i<asteroides.length;i++){
+      asteroides[i].resetar()
+  }
+  naveI.resetar()
+  for(var i=0; i<tiros.length; i++){ //removendo o tiro
+          Mundo.getScene().remove(tiros[i].getTiro())
+      tiros.splice(i, 1)
+  }
+  gameover.pause();
+
+  //resetar dados da infobar
+  document.getElementById('vida').textContent = "♥ ♥ ♥"
+  document.getElementById('pontos').textContent = 0
+
+  //resetando a vida e os pontos do jogador
+  jogador.vida=3
+  jogador.pontos=0
+  view.position.sub(view.position)
+  Mundo.resume()
+}
+
+//teste mira
+var mtMira = new THREE.LineBasicMaterial({
+  color:0xFF1100,
+  transparent:true,
+  opacity:0.6
+})
+
+var geoMira = new THREE.Geometry()
+geoMira.vertices.push(
+  new THREE.Vector3( 0, -25, 0 ),
+	new THREE.Vector3( 0, -25,-1000 )
+)
+
+
+
+var mira = new THREE.Line(geoMira,mtMira)
 
 //Iniciando o mundo
 Mundo.init({ renderCallback: render,clearColor: 0x0000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
+Mundo.add(mira)
 //criando um mapa
 var mapa = new Mapa('images/1.jpg')
 
@@ -379,7 +495,6 @@ var jogador = new Nave(view)
 //criando o vetor de tiros
 var tiros =[]
 
-
 //criando vetor para armazenar os asteroides
 var asteroides = []
 for(var i = 0;i<N_OBJS;i++){
@@ -390,7 +505,6 @@ for(var i = 0;i<N_OBJS;i++){
 var naveI = new Inimigo()
 Mundo.add(naveI.getInimigo())
 
-
 //efeito de nuvem para suavizar o fundo
 Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 
@@ -398,14 +512,6 @@ Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 Mundo.add(view)
 Mundo.add(mapa.getMapa())
 
-//funçoes auxiliares
-var somTiro = new Audio("audio/tiro.mp3")
-var somTiro2 = new Audio("audio/tiro.mp3")//caso o deltaT entre os tiros seja pequeno
-somTiro.volume = 0.5
-somTiro2.volume = 0.5
-
-var somMeteoro = new Audio("audio/explosao.mp3")
-somMeteoro.volume = 0.5
 
 //---------------------------------eventos------------------------------------
 window.addEventListener('keydown',
@@ -440,6 +546,7 @@ window.addEventListener('keydown',
     }
 }
 )
+  
 
   window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
   switch (e.keyCode) {
