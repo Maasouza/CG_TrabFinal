@@ -10,31 +10,31 @@ var myLoaderOBJ = require('./objloader')
 //funçoes e variaves
 var somTiro = new Audio("audio/tiro.mp3")
 var somTiro2 = new Audio("audio/tiro.mp3")//caso o deltaT entre os tiros seja pequeno
-somTiro.volume = 0.5
-somTiro2.volume = 0.5
+somTiro.volume = 0.35
+somTiro2.volume = 0.35
 
 //meteoro batendo na nave
 var somMeteoro = new Audio("audio/explosao.mp3")
-somMeteoro.volume = 0.5
+somMeteoro.volume = 0.35
 
 //capturando uma nave
 var captura = new Audio("audio/item.mp3")
-captura.volume = 0.5
+captura.volume = 0.35
 
 //destruindo uma nave ou meteoro
 var destruir = new Audio("audio/asteroide.mp3")
 var destruir2 = new Audio("audio/asteroide.mp3")//mesmo motivo do somTiro2
-destruir2.volume =0.5
-destruir.volume = 0.5
+destruir2.volume =0.35
+destruir.volume = 0.35
 
 //audio menu gameover
 var gameover = new Audio("audio/gameover.mp3")
-gameover.volume = 0.5
+gameover.volume = 0.35
 gameover.loop = true
 
 //audio 0 vidas
 var nolife = new Audio("audio/navelife.mp3")
-nolife.volume = 0.5
+nolife.volume = 0.35
 
 //flag audio musica
 var on = true
@@ -47,6 +47,31 @@ var diametro = 100
 var astMaterial = new THREE.MeshLambertMaterial({
   map: THREE.ImageUtils.loadTexture('images/lua.png')
 })
+
+//material mira
+var mtMira = new THREE.LineBasicMaterial({
+  color:0xFFFFFF,
+  transparent:true,
+  opacity:0.4
+})
+
+var mtMiraV = new THREE.LineBasicMaterial({
+  color:0xFF1100,
+  transparent:true,
+  opacity:0.4
+})
+
+//geometria mira
+var geoMira = new THREE.Geometry()
+geoMira.vertices.push(
+  new THREE.Vector3( 0, -25, 0 ),
+	new THREE.Vector3( 0, -25,-1000 )
+)
+
+//direçao do raio do raycast
+var direcao = new THREE.Vector3(0,0,-1)
+
+
 
 //gerenciador de carregamento
 var manager = new THREE.LoadingManager();
@@ -99,6 +124,7 @@ var Mapa = function(texPath) {
   mapa.add(formas[1])
 
   this.getMapa = function() {
+    //retorna o objeto
     return mapa
   }
   this.atualizarZ = function(z) {
@@ -313,6 +339,7 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
 
   this.hitbox = new THREE.Box3()
 
+  //copiando a posição da nave
   this.objTiro.position.copy(p)
 
   this.getTiro = function(){
@@ -320,27 +347,37 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
   }
 
   this.atualizar = function(z){
+    //velocidade do tiro
     this.objTiro.position.z -=10
+    //atualizando a hitbox com a posicao e formato do objeto(caso mude)
     this.hitbox.setFromObject(this.objTiro)
-
+    //se o tiro passar de uma -1000 retirar ele da cena
     if(Math.abs(this.objTiro.position.z - z) > 1000){
       return false
       delete this.objTiro
     }
     return true
   }
-
   return this
 }
 
 //-----------------------------------------------------------------------
+
+
 var teclado = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
-var ang = 0
+//angulo da nava no eixo z
+var ang = 0;
+
 var updatePos = function(){
+  //tempo entre uma chamada e outra
   var delta = clock.getDelta()
+  //valor de quanto a nave vai andar
   var distancia = 60*delta;
+  // valor de quanto a nave vai girar
   var angulo = Math.PI/5*delta;
+
+  //verificando as teclas
   if(teclado.pressed("left")){
     view.position.x-=distancia;
     if(ang>-Math.PI/8){
@@ -355,11 +392,12 @@ var updatePos = function(){
     ang+=angulo
     }
   }
+  //retornando a nave para horizontal caso nao esteja se movendo
   if(!teclado.pressed("right") && !teclado.pressed("left")){
     if(ang>Math.PI/90){
       view.children[0].rotation.z-=angulo
       ang-=angulo
-    }else{//corrigir bug de tremer o objeto por  variar angulos pequenos
+    }else{//corrigir bug de tremer o objeto por variar entre pequenos angulos
       if(ang<-Math.PI/90){
         view.children[0].rotation.z+=angulo
         ang+=angulo
@@ -369,8 +407,6 @@ var updatePos = function(){
       }
     }
   }
-
-
   if(teclado.pressed("up")){
     view.position.y+=distancia;
   }else{
@@ -382,23 +418,38 @@ var updatePos = function(){
 
 //função de update de frame
 function render() {
-  view.position.z-=2;
   //atualizar a posição da nave(camera)
+  view.position.z-=2;
+
+  //mover o mapa
   mapa.atualizarZ(view.position.z)
+
   //atualizar a posiçao do hitbox da nave
   jogador.atualizar()
 
-  for(var i=0; i<tiros.length; i++){ //removendo o tiro
+  for(var i=0; i<tiros.length; i++){ //removendo os tiros depois de uma certa posição
     if(!tiros[i].atualizar(view.position.z)){
       Mundo.getScene().remove(tiros[i].getTiro())
       tiros.splice(i, 1)
     }
   }
 
-  //atualizar a posição dos asteroides
+  //atualizar a posição dos asteroides, verificar colisao com a nave ou com a mira
+  var rOrigem = mira.geometry.vertices[0] //origem do raio é a mesma origem da mira
+  var ray = new THREE.Ray(rOrigem,direcao)//raycast
+
+  var countI=0//variavel de controle de objetos intersectados
+
   for(var i=0;i<N_OBJS;i++) {
     if(!asteroides[i].loaded)continue
+    //verificar se o asteroide foi intersectado
+    var interBox = ray.intersectBox(asteroides[i].hitbox)
+    if(interBox != null){
+      countI+=1
+    }
+    //atualiza a posiçao do asteroides
     asteroides[i].atualizar(view.position.z)
+    //verifica se a nave colide com o asteroide
     if(jogador.loaded && jogador.hitbox.isIntersectionBox(asteroides[i].hitbox)){
       asteroides[i].resetar(view.position.z)
       if(jogador.vida>1) {
@@ -419,7 +470,9 @@ function render() {
 
       }
       jogador.vida-=1
+
     }
+    //verifica se o jogador acertou um tiro no asteroide
     for(var j=0; j<tiros.length; j++) {
         if(asteroides[i].hitbox.isIntersectionBox(tiros[j].hitbox)) {
           if(destruir.paused){
@@ -427,15 +480,15 @@ function render() {
           }else{
             destruir2.play()
           }
+          //adiciona a pontuação equivalente ao asteroide
           jogador.pontos+=asteroides[i].pontosDados
-          document.getElementById('pontos').textContent = jogador.pontos
+          document.getElementById('pontos').textContent = jogador.pontos //atualiza a infobar
           asteroides[i].resetar(view.position.z)
-          Mundo.getScene().remove(tiros[j].getTiro())
+          Mundo.getScene().remove(tiros[j].getTiro())//remove o tiro
           tiros.splice(j, 1)
           break
         }
       }
-      updatePos()
   }
 
   naveI.atualizar(view.position.z)
@@ -462,40 +515,59 @@ function render() {
         }
         break
       }
-    }
+  }
 
-    mira.geometry.vertices[0] = view.position.clone().add(new THREE.Vector3(0,-25,-80))
-    mira.geometry.vertices[1] = view.position.clone().add(new THREE.Vector3(0,-25,-9999999))
-    mira.geometry.verticesNeedUpdate = true;
+  //se itersectar algum asteroide mudar a mira de cor
+  if (countI>0){
+      mira.material = mtMiraV;//vermelha
+  }else {
+      mira.material = mtMira;//branca
+  }
+  //atualizando os vertices da mira
+  mira.geometry.vertices[0] = view.position.clone().add(new THREE.Vector3(0,-25,-80))
+  mira.geometry.vertices[1] = view.position.clone().add(new THREE.Vector3(0,-25,-9999999))
+  mira.geometry.verticesNeedUpdate = true;
+  mira.geometry.colorsNeedUpdate = true
+  //se o jogador perder todas as vidas entrar em modo gameover
+  if(jogador.vida==0){
+    gameoverState()
+  }
 
-    if(jogador.vida==0){
-      gameoverState()
-    }
-
+  //função de atualiza posição baseado nos inputs do teclado
+  updatePos()
 }
 
+//funçao para entrar no modo gameover
 var gameoverState = function(){
+  //pausar o mundo e a musica de fundo
   Mundo.pause();
   document.getElementById("backgroundAudio").pause()
   gameover.play()
+  //mudar de layout e exibir a pontuação feita
   document.getElementById("infobar").style.display='none';
   document.getElementById("pontuacao").innerHTML = "Pontos : "+jogador.pontos;
   document.getElementById("backgroundMenu").style.display="block";
 }
 
+//funçao chamada no novo jogo
 window.resetarMundo = function(){
+  //resetar a inclinaçao da nave
   ang=0
   //resetando a posição do asteroides,nave e removendo os tiros
   for(var i = 0;i<asteroides.length;i++){
       asteroides[i].resetar(view.position.z)
   }
+
   naveI.resetar(view.position.z)
-  for(var i=0; i<tiros.length; i++){ //removendo o tiro
-          Mundo.remove(tiros[i].getTiro())
+  for(var i=0; i<tiros.length; i++){ //removendo os tiros
+        Mundo.remove(tiros[i].getTiro())
       tiros.splice(i, 1)
   }
 
+  //pausar a musica de gameover
   gameover.pause();
+
+  //mudar de layout
   document.getElementById("infobar").style.display='block';
   document.getElementById("backgroundMenu").style.display="none";
 
@@ -507,33 +579,26 @@ window.resetarMundo = function(){
   jogador.vida=3
   jogador.pontos=0
 
+  //resetar a posiçao da camera
   view.position.x=0
   view.position.y=0
 
+  //retomar a musica de fundo do jogo
   document.getElementById("backgroundAudio").play()
+
+  //retormar a execuçao do jogo
   Mundo.resume()
 }
 
-//teste mira
-var mtMira = new THREE.LineBasicMaterial({
-  color:0xFFFFFF,
-  transparent:true,
-  opacity:0.4
-})
-
-var geoMira = new THREE.Geometry()
-geoMira.vertices.push(
-  new THREE.Vector3( 0, -25, 0 ),
-	new THREE.Vector3( 0, -25,-1000 )
-)
-
-var mira = new THREE.Line(geoMira,mtMira)
 
 //Iniciando o mundo
 Mundo.init({ renderCallback: render,clearColor: 0x0000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
+//adcinando uma linha que vai servir de mira
+var mira = new THREE.Line(geoMira,mtMira)
 Mundo.add(mira)
-//criando um mapa
+
+//criando um mapa passando  textura como parametro
 var mapa = new Mapa('images/1.jpg')
 
 //definindo uma camera
@@ -542,6 +607,7 @@ var view  = Mundo.getCamera()
 //criando nova nave
 var jogador = new Nave(view)
 
+//vetor de tiros
 var tiros =[]
 
 //criando vetor para armazenar os asteroides
@@ -561,11 +627,10 @@ Mundo.getScene().fog = new THREE.FogExp2(0x0000022, 0.00175)
 Mundo.add(view)
 Mundo.add(mapa.getMapa())
 
-
 //---------------------------------eventos------------------------------------
 window.addEventListener('keydown',
  function(e) {
-
+    //pausar a musica
     if(e.keyCode == 77){//m
       var audio = document.getElementById("backgroundAudio");
       if(on){
@@ -582,10 +647,15 @@ window.addEventListener('keydown',
 
 window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
   switch (e.keyCode) {
-    case 32: //espaÃ§o
+    case 32: //espaaço
+
       var posicaoTiro = new THREE.Vector3(0,0,0)
+      //copiar a posicao da camera
       posicaoTiro = view.position.clone()
-      posicaoTiro.sub(new THREE.Vector3(0,25,80)) //subtraindo a posiÃ§Ã£o da nave em relaÃ§Ã£o a cÃ¢mera
+
+      //subtraindo a posiÃ§Ã£o da nave em relaÃ§Ã£o a cÃ¢mera
+      posicaoTiro.sub(new THREE.Vector3(0,25,80))
+
       var tiro = new Tiro(posicaoTiro)
       tiros.push(tiro)
       Mundo.add(tiro.getTiro())
