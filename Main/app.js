@@ -39,6 +39,7 @@ nolife.volume = 0.35
 
 //flag audio musica
 var on = true
+var miraOn = true
 
 //Numero de asteroides e inimigos
 var N_OBJS = 11
@@ -102,8 +103,9 @@ var onProgress = function ( xhr ) {
 var Mapa = function(texPath) {
   //criando pois somente é retornado um objeto
   var mapa = new THREE.Object3D()
-  var formas = []
-
+  var formas = [];
+  var hitbox;
+  this.hitbox = new THREE.Box3();
   //criando um malha
   formas.push(new THREE.Mesh(
     new THREE.CylinderGeometry(diametro, diametro, 5000, 24, 24, true),//forma cilindrica
@@ -135,8 +137,8 @@ var Mapa = function(texPath) {
           break
         }
       }
+      this.hitbox.setFromObject(mapa)
     }
-
 
   return this;
 }
@@ -369,7 +371,7 @@ var teclado = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 //angulo da nava no eixo z
 var ang = 0;
-
+var canGo = [true,true,true,true] // can go [left,right,up,down]
 var updatePos = function(){
   //tempo entre uma chamada e outra
   var delta = clock.getDelta()
@@ -378,16 +380,42 @@ var updatePos = function(){
   // valor de quanto a nave vai girar
   var angulo = Math.PI/5*delta;
 
+  if(mapa.hitbox.containsBox(jogador.hitbox)){
+    for(var i = 0;i<canGo.length;i++){
+      canGo[i]=true
+    }
+  }
+
   //verificando as teclas
-  if(teclado.pressed("left")){
+  if(teclado.pressed("left") && canGo[0]){
+
     view.position.x-=distancia;
+    //se ele nao podia ir pra direita, agora pode
+    if(!canGo[1]){
+      canGo[1]=true
+    }
+    //se o mapa nao coontem o jogador ele nao pode ir mais para esquerda
+    if(!mapa.hitbox.containsBox(jogador.hitbox)){
+      view.position.x+=distancia ;
+      canGo[0]=false
+    }
     if(ang>-Math.PI/8){
     view.children[0].rotation.z-=angulo
     ang-=angulo
-    }
   }
-  if(teclado.pressed("right")){
+  }
+  if(teclado.pressed("right") && canGo[1]){
+
     view.position.x+=distancia;
+    if(!canGo[0]){
+      canGo[0]=true
+    }
+    //se o mapa nao coontem o jogador ele nao pode ir mais para direita
+    if(!mapa.hitbox.containsBox(jogador.hitbox)){
+      view.position.x-=distancia ;
+      canGo[1]=false
+    }
+
     if(ang<Math.PI/8){
     view.children[0].rotation.z+=angulo
     ang+=angulo
@@ -395,24 +423,50 @@ var updatePos = function(){
   }
   //retornando a nave para horizontal caso nao esteja se movendo
   if(!teclado.pressed("right") && !teclado.pressed("left")){
-    if(ang>Math.PI/90){
+    if(ang>Math.PI/180){
       view.children[0].rotation.z-=angulo
       ang-=angulo
+      if(!mapa.hitbox.containsBox(jogador.hitbox)){
+        view.position.x-=distancia
+      }
     }else{//corrigir bug de tremer o objeto por variar entre pequenos angulos
-      if(ang<-Math.PI/90){
+      if(ang<-Math.PI/180){
         view.children[0].rotation.z+=angulo
         ang+=angulo
+        if(!mapa.hitbox.containsBox(jogador.hitbox)){
+          view.position.x+=distancia
+        }
       }else{
         view.children[0].rotation.z=0
         ang=0
       }
     }
   }
-  if(teclado.pressed("up")){
+  if(teclado.pressed("up") && canGo[2]){
     view.position.y+=distancia;
+    if(!canGo[3]){
+      canGo[3]=true
+    }
+    //se o mapa nao coontem o jogador ele nao pode ir mais para cima
+    if(!mapa.hitbox.containsBox(jogador.hitbox)){
+      view.position.y-=distancia ;
+      canGo[2]=false
+    }
+
+
   }else{
-    if(teclado.pressed("down")){
+    if(teclado.pressed("down") && canGo[3]){
     view.position.y-=distancia;
+    if(!canGo[2]){
+      canGo[2]=true
+    }
+    //se o mapa nao coontem o jogador ele nao pode ir mais para baixo
+    if(!mapa.hitbox.containsBox(jogador.hitbox)){
+      view.position.y+=distancia ;
+      canGo[3]=false
+    }
+
+
   }}
 
 }
@@ -544,6 +598,8 @@ var gameoverState = function(){
   Mundo.pause();
   document.getElementById("backgroundAudio").pause()
   gameover.play()
+  somTiro.volume=0.0
+  somTiro2.volume=0.0
   //mudar de layout e exibir a pontuação feita
   document.getElementById("infobar").style.display='none';
   document.getElementById("pontuacao").innerHTML = "Pontos : "+jogador.pontos;
@@ -567,6 +623,9 @@ window.resetarMundo = function(){
 
   //pausar a musica de gameover
   gameover.pause();
+
+  somTiro.volume=0.35
+  somTiro2.volume=0.35
 
   //mudar de layout
   document.getElementById("infobar").style.display='block';
@@ -631,6 +690,8 @@ Mundo.add(mapa.getMapa())
 //---------------------------------eventos------------------------------------
 window.addEventListener('keydown',
  function(e) {
+   // nao utilizar o comando padra
+   e.preventDefault()
     //pausar a musica
     if(e.keyCode == 77){//m
       var audio = document.getElementById("backgroundAudio");
@@ -641,6 +702,17 @@ window.addEventListener('keydown',
         audio.play()
         on=true
       }
+    }
+
+    if(e.keyCode == 9){//tab
+      if(miraOn){
+        miraOn=false
+        Mundo.remove(mira)
+      }else{
+        miraOn=true
+        Mundo.add(mira)
+      }
+
     }
 }
 )
