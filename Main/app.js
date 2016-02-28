@@ -468,7 +468,18 @@ var updatePos = function(){
 
 
   }}
-
+  if(!mapa.hitbox.containsBox(jogador.hitbox)){
+    if(view.position.x>0){
+      view.position.x-=distancia;
+    }else{
+      view.position.x+=distancia
+    }
+    if(view.position.y>0){
+      view.position.y-=distancia;
+    }else{
+      view.position.y+=distancia
+    }
+  }
 }
 
 //função de update de frame
