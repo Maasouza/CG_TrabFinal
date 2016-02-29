@@ -7,7 +7,6 @@ var THREE = require('three')
 var myLoader = require('./objmtlloader')
 var myLoaderOBJ = require('./objloader')
 
-//vairável de tempo para o apoio ao efeito de explosão
 var time = 0.0
 var gameoverMode =false
 
@@ -40,7 +39,7 @@ gameover.loop = true
 var nolife = new Audio("audio/navelife.mp3")
 nolife.volume = 0.35
 
-//flag audio musica e mira
+//flag audio musica
 var on = true
 var miraOn = true
 
@@ -212,12 +211,11 @@ var Nave = function(sObject){
 var Asteroide = function() {
   var loaded = false
   var asteroide = new THREE.Object3D()
-  //instanciando o loader
   var objmtlLoad = new THREE.OBJLoader(manager);
   var self=this;
-  var pontosDados //pontos recebidos por destruir, no caso o asteroide
-  this.hitbox = new THREE.Box3() //criando o hitbox
-  this.pontosDados = Math.floor(10 + Math.random()*10) //pontos entre [10, 20]
+  var pontosDados //pontos recebidos por destruir entre [10,20]
+  this.hitbox = new THREE.Box3()
+  this.pontosDados = Math.floor(10 + Math.random()*10)
   //velocidade de translação
   asteroide.velocity = Math.random()*3.5 + 2.0
   //velocidade de rotação
@@ -285,14 +283,12 @@ var Asteroide = function() {
 var Inimigo = function() {
   var carregado = false
   var inimigo = new THREE.Object3D()
-  //instanciando o loader
   var objmtlLoad = new THREE.OBJMTLLoader(manager);
   var self=this
-  //definir modelo como não carregado
   this.loaded = false
   //velocidade de translação
   inimigo.velocity = 5
-  //criando o hitbox
+  //
   this.hitbox = new THREE.Box3()
 
   objmtlLoad.load(
@@ -307,7 +303,7 @@ var Inimigo = function() {
       inimigo.add(object)
       inimigo.position.set(-(diametro/2) + Math.random() * diametro,-(diametro/2)
         + Math.random() * diametro, -1500 - Math.random() * 1500)
-      self.loaded = true //definir como carregada
+      self.loaded = true
 
     },
     onProgress
@@ -355,7 +351,7 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
     municao//material
   )
 
-  this.hitbox = new THREE.Box3() //hitbox do tiro
+  this.hitbox = new THREE.Box3()
 
   //copiando a posição da nave
   this.objTiro.position.copy(p)
@@ -380,47 +376,49 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
 }
 
 //-----------------------------------explosao------------------------------
+//////////////settings////////////
+var velProj = 20;//velocidade da explosao
+var totalObjects = 500;//numero de particulas
+var colors = [0xCCCCCC, 0xDDDDDD, 0xFFFFFF, 0xEEEEEE, 0xF3F3F3]; //possiveis cores
+/////////////////////////////////
+var dirs = [];//vetor de direçoes
+var explosoes = [];//vetor das explosoes
 
-var movementSpeed = 20; //velocidade da explosão
-var totalObjects = 500; //número de partículas
-var colors = [0xCCCCCC, 0xDDDDDD, 0xFFFFFF, 0xEEEEEE, 0xF3F3F3]; //cores possíveis para as partículas
-
-var dirs = [];
-var parts = [];  //vetor das partículas
-
-function ExplodeAnimation(x,y,z,objectSize){ //x, y e z representam o ponto do centro da explosão, objectSize é o tamanho das partículas
+function ExpParticulas(x,y,z,objectSize){//funçao que cria 500 cubos na posição x,y,z com tamanho objectSize
   var geometry = new THREE.Geometry();
 
+  //criando cada cubo
   for (i = 0; i < totalObjects; i ++)
   {
-    var vertex = new THREE.Vector3(); //centro da explosão
+    var vertex = new THREE.Vector3();
     vertex.x = x;
     vertex.y = y;
     vertex.z = z;
 
     geometry.vertices.push( vertex );
-    dirs.push({x:(Math.random() * movementSpeed)-(movementSpeed/2),y:(Math.random() * movementSpeed)-(movementSpeed/2),z:(Math.random() * movementSpeed)-(movementSpeed/2)}); //velocidade na direção x, y e z da partícula
+    dirs.push({x:(Math.random() * velProj)-(velProj/2),y:(Math.random() * velProj)-(velProj/2),z:(Math.random() * velProj)-(velProj/2)});
   }
-  var material = new THREE.ParticleBasicMaterial( { size: objectSize,  color: colors[Math.round(Math.random() * colors.length)] }); //aparência da partícula, tamanho e cor
-  var particles = new THREE.ParticleSystem( geometry, material ); //criação da partícula
+  //criando o material , setando o tamanho do cubo e a cor
+  var material = new THREE.ParticleBasicMaterial( { size: objectSize,  color: colors[Math.round(Math.random() * colors.length)] });
+  var particles = new THREE.ParticleSystem( geometry, material );
 
   this.object = particles;
   this.status = true;
 
-  this.nTimes = 0;  //interação
+  this.nTimes = 0;
   Mundo.add(this.object)
-  this.update = function(){
+  this.update = function(){//funçao que atualiza a posicao das particulas
     if (this.status == true){
       var nObjexp = totalObjects;
-      while(nObjexp--) { //informação de direção de cada partícula
+      while(nObjexp--) {
         var particle =  this.object.geometry.vertices[nObjexp]
         particle.y += dirs[nObjexp].y;
         particle.x += dirs[nObjexp].x;
         particle.z += dirs[nObjexp].z;
       }
-      this.nTimes++  //aumenta o número da interação
+      this.nTimes++
       this.object.geometry.verticesNeedUpdate = true;
-      if (this.nTimes==100){ //número máximo de interações, quando alcançada retira-se as partículas da tela
+      if (this.nTimes==100){//se o numero de interaçoes for maior que 100 remover as particulas da tela
         this.status = false;
         Mundo.remove(this.object)
       }
@@ -618,8 +616,7 @@ function render() {
           }else{
             destruir2.play()
           }
-          //efeito de explosão para o asteroide[i] que acaba de ser destruido, na posição em que foi acertado
-          parts.push(new ExplodeAnimation(asteroides[i].getAsteroide().position.x,asteroides[i].getAsteroide().position.y,asteroides[i].getAsteroide().position.z,5))
+          explosoes.push(new ExpParticulas(asteroides[i].getAsteroide().position.x,asteroides[i].getAsteroide().position.y,asteroides[i].getAsteroide().position.z,5))
           //adiciona a pontuação equivalente ao asteroide
           jogador.pontos+=asteroides[i].pontosDados
           document.getElementById('pontos').textContent = jogador.pontos //atualiza a infobar
@@ -648,12 +645,11 @@ function render() {
         }else{
           destruir2.play()
         }
-        //efeito de explosão da nave que acaba de ser destruída, na posição em que foi acertada
-        parts.push(new ExplodeAnimation(naveI.getInimigo().position.x,naveI.getInimigo().position.y,naveI.getInimigo().position.z,5))
+        explosoes.push(new ExpParticulas(naveI.getInimigo().position.x,naveI.getInimigo().position.y,naveI.getInimigo().position.z,5))
         naveI.resetar(view.position.z)
-        Mundo.getScene().remove(tiros[j].getTiro()) //remove o tiro
+        Mundo.getScene().remove(tiros[j].getTiro())
         tiros.splice(j, 1)
-        if(jogador.pontos>=10){ //retira os pontos pela destruição apenas se a pontuação do jogador for >= 10
+        if(jogador.pontos>=10){
           jogador.pontos-=10
           document.getElementById('pontos').textContent = jogador.pontos
         }
@@ -661,11 +657,11 @@ function render() {
       }
   }
 
-  for(var i = 0; i<parts.length; i++){
-    if(parts[i].status){
-      parts[i].update()
+  for(var i = 0; i<explosoes.length; i++){
+    if(explosoes[i].status){
+      explosoes[i].update()
     }else{
-      parts.splice(i,1)
+      explosoes.splice(i,1)
     }
 
   }
@@ -688,15 +684,14 @@ function render() {
     jogador.vida=-1
     Mundo.remove(view)
     Mundo.remove(mira)
-    //efeito de explosão da nave do jogador
-    parts.push(new ExplodeAnimation(view.position.x,view.position.y-25,view.position.z-80,10))
+    explosoes.push(new ExpParticulas(view.position.x,view.position.y-25,view.position.z-80,10))
     gameoverMode = true
   }
 
-  if(gameoverMode){ //cria o intervalo para o efeito de explosão, antes do gameover
+  if(gameoverMode){
     time += clock.getDelta()
     console.log(time)
-    if( time>0.5){ //após este tempo, entra na tela de gameover
+    if( time>0.5){
       gameoverState()
     }
    }
@@ -708,13 +703,13 @@ function render() {
 
 //funçao para entrar no modo gameover
 var gameoverState = function(){
-  for(var i = 0; i<parts.length; i++){
-    if(parts[i].status){
-      parts[i].status=false
-      parts[i].update()
+  for(var i = 0; i<explosoes.length; i++){
+    if(explosoes[i].status){
+      explosoes[i].status=false
+      explosoes[i].update()
     }
   }
-  parts=[]
+  explosoes=[]
   //pausar o mundo e a musica de fundo
   Mundo.pause();
   document.getElementById("backgroundAudio").pause()
@@ -845,15 +840,15 @@ window.addEventListener('keydown',
 )
 
 
-window.addEventListener('keyup', function(e){ //para funcionar só quando soltar o espaço
+window.addEventListener('keyup', function(e){ //para funcionar sÃ³ quando soltar o espaÃ§o
   switch (e.keyCode) {
-    case 32: //espaço
+    case 32: //espaaço
 
       var posicaoTiro = new THREE.Vector3(0,0,0)
       //copiar a posicao da camera
       posicaoTiro = view.position.clone()
 
-      //subtraindo a posiÃ§Ã£o da nave em relação a câmera
+      //subtraindo a posiÃ§Ã£o da nave em relaÃ§Ã£o a cÃ¢mera
       posicaoTiro.sub(new THREE.Vector3(0,25,80))
 
       var tiro = new Tiro(posicaoTiro)
