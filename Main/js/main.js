@@ -7,6 +7,9 @@ var THREE = require('three')
 var myLoader = require('./objmtlloader')
 var myLoaderOBJ = require('./objloader')
 
+var time = 0.0
+var gameoverMode =false
+
 //funçoes e variaves
 var somTiro = new Audio("audio/tiro.mp3")
 var somTiro2 = new Audio("audio/tiro.mp3")//caso o deltaT entre os tiros seja pequeno
@@ -75,7 +78,6 @@ geoMira.vertices.push(
 
 //direçao do raio do raycast
 var direcao = new THREE.Vector3(0,0,-1)
-
 
 
 //gerenciador de carregamento
@@ -306,6 +308,7 @@ var Inimigo = function() {
     },
     onProgress
   )
+
   this.resetar = function(z){
     inimigo.position.set(
       -(diametro/2) + Math.random() * diametro,
@@ -372,7 +375,55 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
   return this
 }
 
-//-----------------------------------------------------------------------
+//-----------------------------------explosao------------------------------
+//////////////settings////////////
+var movementSpeed = 20;
+var totalObjects = 500;
+var colors = [0xCCCCCC, 0xDDDDDD, 0xFFFFFF, 0xEEEEEE, 0xF3F3F3];
+/////////////////////////////////
+var dirs = [];
+var parts = [];
+
+function ExplodeAnimation(x,y,z,objectSize){
+  var geometry = new THREE.Geometry();
+
+  for (i = 0; i < totalObjects; i ++)
+  {
+    var vertex = new THREE.Vector3();
+    vertex.x = x;
+    vertex.y = y;
+    vertex.z = z;
+
+    geometry.vertices.push( vertex );
+    dirs.push({x:(Math.random() * movementSpeed)-(movementSpeed/2),y:(Math.random() * movementSpeed)-(movementSpeed/2),z:(Math.random() * movementSpeed)-(movementSpeed/2)});
+  }
+  var material = new THREE.ParticleBasicMaterial( { size: objectSize,  color: colors[Math.round(Math.random() * colors.length)] });
+  var particles = new THREE.ParticleSystem( geometry, material );
+
+  this.object = particles;
+  this.status = true;
+
+  this.nTimes = 0;
+  Mundo.add(this.object)
+  this.update = function(){
+    if (this.status == true){
+      var nObjexp = totalObjects;
+      while(nObjexp--) {
+        var particle =  this.object.geometry.vertices[nObjexp]
+        particle.y += dirs[nObjexp].y;
+        particle.x += dirs[nObjexp].x;
+        particle.z += dirs[nObjexp].z;
+      }
+      this.nTimes++
+      this.object.geometry.verticesNeedUpdate = true;
+      if (this.nTimes==100){
+        this.status = false;
+        Mundo.remove(this.object)
+      }
+    }
+  }
+}
+//-------------------------------------------------------------------------
 
 
 var teclado = new THREEx.KeyboardState();
@@ -563,6 +614,7 @@ function render() {
           }else{
             destruir2.play()
           }
+          parts.push(new ExplodeAnimation(asteroides[i].getAsteroide().position.x,asteroides[i].getAsteroide().position.y,asteroides[i].getAsteroide().position.z,5))
           //adiciona a pontuação equivalente ao asteroide
           jogador.pontos+=asteroides[i].pontosDados
           document.getElementById('pontos').textContent = jogador.pontos //atualiza a infobar
@@ -591,6 +643,7 @@ function render() {
         }else{
           destruir2.play()
         }
+        parts.push(new ExplodeAnimation(naveI.getInimigo().position.x,naveI.getInimigo().position.y,naveI.getInimigo().position.z,5))
         naveI.resetar(view.position.z)
         Mundo.getScene().remove(tiros[j].getTiro())
         tiros.splice(j, 1)
@@ -600,6 +653,15 @@ function render() {
         }
         break
       }
+  }
+
+  for(var i = 0; i<parts.length; i++){
+    if(parts[i].status){
+      parts[i].update()
+    }else{
+      parts.splice(i,1)
+    }
+
   }
 
   //se o raio itersectou algum asteroide mudar a mira de cor
@@ -617,8 +679,21 @@ function render() {
 
   //se o jogador perder todas as vidas entrar em modo gameover
   if(jogador.vida==0){
-    gameoverState()
+    jogador.vida=-1
+    Mundo.remove(view)
+    Mundo.remove(mira)
+    parts.push(new ExplodeAnimation(view.position.x,view.position.y-25,view.position.z-80,10))
+    gameoverMode = true
   }
+
+  if(gameoverMode){
+    time += clock.getDelta()
+    console.log(time)
+    if( time>0.5){
+      gameoverState()
+    }
+   }
+
 
   //função de atualiza posição baseado nos inputs do teclado
   updatePos()
@@ -626,6 +701,13 @@ function render() {
 
 //funçao para entrar no modo gameover
 var gameoverState = function(){
+  for(var i = 0; i<parts.length; i++){
+    if(parts[i].status){
+      parts[i].status=false
+      parts[i].update()
+    }
+  }
+  parts=[]
   //pausar o mundo e a musica de fundo
   Mundo.pause();
   document.getElementById("backgroundAudio").pause()
@@ -640,6 +722,10 @@ var gameoverState = function(){
 
 //funçao chamada no novo jogo
 window.resetarMundo = function(){
+    gameoverMode=false
+    time = 0
+    Mundo.add(view)
+    Mundo.add(mira)
   //resetar a inclinaçao da nave
   ang=0
   //resetando a posição do asteroides,nave e removendo os tiros
