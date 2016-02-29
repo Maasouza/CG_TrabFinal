@@ -42,6 +42,8 @@ var miraOn = true
 
 //Numero de asteroides e inimigos
 var N_OBJS = 11
+
+//diametro do mapa
 var diametro = 100
 
 // material asteroide
@@ -50,12 +52,14 @@ var astMaterial = new THREE.MeshLambertMaterial({
 })
 
 //material mira
+//mira branca
 var mtMira = new THREE.LineBasicMaterial({
   color:0xFFFFFF,
   transparent:true,
   opacity:0.4
 })
 
+//mira vermelha(quando atravessa algum asteroide)
 var mtMiraV = new THREE.LineBasicMaterial({
   color:0xFF1100,
   transparent:true,
@@ -92,6 +96,7 @@ manager.onLoad = function(){
   Mundo.start()
 }
 
+//funçao de carregamento de cada loader
 var onProgress = function ( xhr ) {
   if ( xhr.lengthComputable ) {
     var percentComplete = xhr.loaded / xhr.total * 100;
@@ -129,6 +134,8 @@ var Mapa = function(texPath) {
     //retorna o objeto
     return mapa
   }
+
+  //reposicionando um cilindro
   this.atualizarZ = function(z) {
       for(var i=0; i<2; i++) {
         if(z < formas[i].position.z - 2500) {
@@ -170,7 +177,7 @@ var Nave = function(sObject){
         'obj/thenave.mtl',
         //quando carrega-los
         function(object){
-          //nave 30% do tamanho original
+          //nave 2.5% do tamanho original
           object.scale.set(0.025,0.025,0.025)
           object.rotation.set(0, Math.PI, 0)
           nave = object
@@ -233,9 +240,11 @@ var Asteroide = function() {
     },
     onProgress
   )
-
+  // funçao para reposicionar o objeto
   this.resetar = function(z){
+    // redefine a velocidade
     asteroide.velocity = Math.random()*3.5 + 2
+    //repo
     asteroide.position.set(
       -(diametro/2) + Math.random() * diametro,
       -(diametro/2) + Math.random() * diametro,
@@ -328,7 +337,7 @@ var Inimigo = function() {
 
 var municao = new  THREE.MeshPhongMaterial({  //material do tiro
   color: 0xf2ea63,
-  emissive: 0xebeb6c
+  emissive: 0xebeb6c //cor emitada pelo objeto
 })
 
 var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
@@ -368,10 +377,12 @@ var Tiro = function(p){ //classe tiro, inicializada na posiÃ§Ã£o P0
 
 var teclado = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
-//angulo da nava no eixo z
+//angulo da nave no eixo z
 var ang = 0;
-var canGo = [true,true,true,true] // can go [left,right,up,down]
+//
+var canGo = [true,true,true,true] // direçao que a nave pode andar [left,right,up,down]
 var updatePos = function(){
+
   //tempo entre uma chamada e outra
   var delta = clock.getDelta()
   //valor de quanto a nave vai andar
@@ -379,6 +390,7 @@ var updatePos = function(){
   // valor de quanto a nave vai girar
   var angulo = Math.PI/5*delta;
 
+  //se o objeto estiver dentro do cubo que envolve o cilindro  tornar todas as direçoes possiveis
   if(mapa.hitbox.containsBox(jogador.hitbox)){
     for(var i = 0;i<canGo.length;i++){
       canGo[i]=true
@@ -393,6 +405,7 @@ var updatePos = function(){
     if(!canGo[1]){
       canGo[1]=true
     }
+
     //se o mapa nao coontem o jogador ele nao pode ir mais para esquerda
     if(!mapa.hitbox.containsBox(jogador.hitbox)){
       view.position.x+=distancia ;
@@ -467,6 +480,7 @@ var updatePos = function(){
 
 
   }}
+  //corrigir o bug da nave nao se movimentar
   if(!mapa.hitbox.containsBox(jogador.hitbox)){
     if(view.position.x>0){
       view.position.x-=distancia;
@@ -486,7 +500,7 @@ function render() {
   //atualizar a posição da nave(camera)
   view.position.z-=2;
 
-  //mover o mapa
+  //mover um dos cilindro que formam o mapa caso necessario
   mapa.atualizarZ(view.position.z)
 
   //atualizar a posiçao do hitbox da nave
@@ -522,6 +536,8 @@ function render() {
       }else{
         nolife.play()
       }
+
+      //alterar a infobar
       switch (jogador.vida) {
         case 3:{
                 document.getElementById('vida').textContent = "♥ ♥"
@@ -534,6 +550,8 @@ function render() {
         default:break;
 
       }
+
+      //retirar uma vida do jogador
       jogador.vida-=1
 
     }
@@ -557,6 +575,7 @@ function render() {
   }
 
   naveI.atualizar(view.position.z)
+  //captura da nave inimiga pelo jogador
   if(jogador.loaded && jogador.hitbox.isIntersectionBox(naveI.hitbox)){
     captura.play()
     naveI.resetar(view.position.z)
@@ -564,6 +583,7 @@ function render() {
     document.getElementById('pontos').textContent = jogador.pontos
   }
 
+  //verificar se o inimigo foi abatido
   for(var j=0; j<tiros.length; j++) {
       if(naveI.hitbox.isIntersectionBox(tiros[j].hitbox)) {
         if(destruir.paused){
@@ -582,17 +602,19 @@ function render() {
       }
   }
 
-  //se itersectar algum asteroide mudar a mira de cor
+  //se o raio itersectou algum asteroide mudar a mira de cor
   if (countI>0){
       mira.material = mtMiraV;//vermelha
   }else {
       mira.material = mtMira;//branca
   }
+
   //atualizando os vertices da mira
   mira.geometry.vertices[0] = view.position.clone().add(new THREE.Vector3(0,-25,-80))
   mira.geometry.vertices[1] = view.position.clone().add(new THREE.Vector3(0,-25,-9999999))
   mira.geometry.verticesNeedUpdate = true;
   mira.geometry.colorsNeedUpdate = true
+
   //se o jogador perder todas as vidas entrar em modo gameover
   if(jogador.vida==0){
     gameoverState()
@@ -625,7 +647,9 @@ window.resetarMundo = function(){
       asteroides[i].resetar(view.position.z)
   }
 
+  //resetar os tiros
   naveI.resetar(view.position.z)
+
   for(var i=0; i<tiros.length; i++){ //removendo os tiros
         Mundo.remove(tiros[i].getTiro())
       tiros.splice(i, 1)
@@ -660,7 +684,6 @@ window.resetarMundo = function(){
   Mundo.resume()
 }
 
-
 //Iniciando o mundo
 Mundo.init({ renderCallback: render,clearColor: 0x0000022,antialias:true}) //definindo a funçao de update e a cor de fundo do mundo
 
@@ -687,6 +710,7 @@ for(var i = 0;i<N_OBJS;i++){
   Mundo.add(asteroides[i].getAsteroide())
 }
 
+//criando nave inimiga (nave coletavel)
 var naveI = new Inimigo()
 Mundo.add(naveI.getInimigo())
 
