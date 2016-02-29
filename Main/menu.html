@@ -38,18 +38,18 @@
           var audio = document.getElementById("backgroundAudio");
           var btn = document.getElementById("btnsound");
           if(audiostate){
-            btn.value = "Turn on music"
+            btn.value = "Ligar Música"
             audio.pause()
             audiostate=false
           }else{
-            btn.value = "Turn off music"
+            btn.value = "Desligar Música"
             audio.play()
             audiostate=true
           }
         }
 
     </script>
-    <audio id='backgroundAudio' style="display:hidden;"loop="loop" autoplay="autoplay" onloadeddata="changeVolume(0.3)">
+    <audio id='backgroundAudio' style="display=hidden;"loop="loop" autoplay="autoplay" onloadeddata="changeVolume(0.3)">
       <source src="audio/open.mp3" />
     </audio>
     <div class="body"></div>
@@ -59,7 +59,7 @@
                  <input type="button" onClick="javascript:window.location.href='game.html'" value="Jogar" >
                  <input type="button" value="Instru&ccedil;&atilde;o" onClick="showInfo()">
                  <input type="button" value="Créditos" onclick="showCred()">
-                 <input type="button" id='btnsound' value="Turn off music" onclick="mute()">
+                 <input type="button" id='btnsound' value="Desligar Música" onclick="mute()">
 		</div>
     <a href='javascript:hideInfo()'><div  id="info"></div><a/>
     <a href='javascript:hideCred()'><div  id="cred"></div><a/>
