@@ -16,7 +16,7 @@ O arquivo 'app.js' é gerado pelo Node.js a partir do arquivo main.js e suas inc
 Os arquivos criados apenas pelo grupo foram js/main.js, index.html, menu.html e game.html.
 Os modelos 3Ds e músicas foram achados na internet (devidos créditos aos autores no menu do jogo). 
 
-Por questão de seguraça, os navegadores não permitem que o JavaScript acesse o disco local, impossibilitando do jogo ser aberto fora de um servidor. Para executar, basta colocar os arquivos em um servidor e abrir o arquivo index.html. 
+Por questão de seguraça, os navegadores não permitem que o JavaScript acesse o disco local, impossibilitando do jogo ser aberto fora de um servidor. Para executar, basta colocar os arquivos em um servidor e abrir a pasta através do servidor local.  
 Caso deseje abrir sem realizar este processo, basta abrir a página jogo.html, que levará para o jogo, e o repositorio.html levará diretamente para o repositório.  
 
 
